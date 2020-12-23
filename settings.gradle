@@ -1,0 +1,4 @@
+include ':libcompiler'
+include ':libannotation'
+include ':app'
+rootProject.name = "Demo"

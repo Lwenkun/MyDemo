@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="test_translation">
+        访问我们的网站 <xliff:g
+        id="application_homepage">http://my/app/home.html</xliff:g>
+    </string>
+</resources>

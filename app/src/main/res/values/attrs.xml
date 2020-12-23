@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="Indicator">
+        <attr name="dotRadius" format="dimension|reference"/>
+        <attr name="dotMargin" format="dimension|reference" />
+        <attr name="focusedDotLength" format="dimension|reference" />
+        <attr name="focusedDotColor" format="color|reference" />
+        <attr name="unfocusedDotColor" format="color|reference" />
+    </declare-styleable>
+
+</resources>
