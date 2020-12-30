@@ -1,17 +1,21 @@
 package me.liwenkun.demo.customview
 
+import android.graphics.Color
+import android.graphics.Outline
+import android.graphics.Path
+import android.os.Build
 import android.os.Bundle
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.ImageView
+import android.widget.SeekBar
 import android.widget.TextView
-import androidx.fragment.app.Fragment
+import androidx.annotation.RequiresApi
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import me.liwenkun.demo.DemoBaseFragment
 import me.liwenkun.demo.R
 import me.liwenkun.demo.libannotation.Demo
+import me.liwenkun.demo.utils.Utils
 
 @Demo("/安卓/自定义View/", "仿搜狗输入法指示器")
 class CustomViewFragment : DemoBaseFragment() {
@@ -47,5 +51,28 @@ class CustomViewFragment : DemoBaseFragment() {
             }
         }
         indicator.setUpWithPager(viewPager)
+
+        val ivOutline = view.findViewById<ImageView>(R.id.iv_outline)
+        val seekBar: SeekBar = view.findViewById(R.id.sb_elevation)
+        ivOutline.clipToOutline = true
+        ivOutline.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View?, outline: Outline?) {
+                if (view != null) {
+                    outline.also {  }
+                    outline?.setRoundRect(0, 0, view.width, view.height, Utils.px(10).toFloat())
+                }
+            }
+        }
+        seekBar.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                ivOutline.elevation = progress.toFloat()
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+            }
+        })
     }
 }

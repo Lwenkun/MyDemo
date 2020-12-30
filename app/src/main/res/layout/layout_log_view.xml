@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/handle"
+        android:text="@string/log"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@drawable/log_view_handle" />
 
     <ListView
         android:id="@+id/logs"
-        android:paddingTop="12dp"
-        android:background="#88000000"
-        android:divider="@null"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="12dp" />
+        android:background="@color/log_view_background"
+        android:divider="@null" />
 
-    <ImageView
-        android:id="@+id/handle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|top"
-        android:src="@drawable/ic_handle" />
-
-</FrameLayout>
+</LinearLayout>

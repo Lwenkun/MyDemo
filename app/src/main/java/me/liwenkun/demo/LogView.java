@@ -1,5 +1,6 @@
 package me.liwenkun.demo;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.MotionEvent;
@@ -22,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import static me.liwenkun.demo.utils.Utils.px;
 
 public class LogView extends FrameLayout {
 
@@ -57,21 +60,30 @@ public class LogView extends FrameLayout {
 
     private void initView() {
         lvLogs = findViewById(R.id.logs);
-        findViewById(R.id.handle).setOnTouchListener(new OnTouchListener() {
+        View handle = findViewById(R.id.handle);
+        handle.setOnTouchListener(new OnTouchListener() {
             float lastY = 0;
+            float offsetLoss = 0;
+            @SuppressLint("ClickableViewAccessibility")
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-
-                } else if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+                if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
                     offset(lastY - event.getRawY());
+                } else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+                    offsetLoss = 0;
                 }
                 lastY = event.getRawY();
-                return true;
+                return false;
             }
 
             private void offset(float y) {
+                y = Math.max(-(getHeight() - px(40)), Math.min(getTop(), y));
                 ViewGroup.LayoutParams lp = getLayoutParams();
+                offsetLoss += y - (int) y;
+                if (offsetLoss > 1) {
+                    y = y +1;
+                    offsetLoss = offsetLoss - 1;
+                }
                 lp.height += y;
                 requestLayout();
             }

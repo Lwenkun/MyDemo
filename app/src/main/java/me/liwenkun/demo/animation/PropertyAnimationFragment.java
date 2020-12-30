@@ -2,7 +2,6 @@ package me.liwenkun.demo.animation;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,15 +16,9 @@ import me.liwenkun.demo.R;
 import me.liwenkun.demo.libannotation.Demo;
 
 @Demo(category = "/安卓/动画", title = "属性动画")
-public class AnimationFragment extends DemoBaseFragment {
+public class PropertyAnimationFragment extends DemoBaseFragment {
 
     Animator animator;
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -57,10 +50,14 @@ public class AnimationFragment extends DemoBaseFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = LayoutInflater.from(getContext()).inflate(R.layout.activity_animation, container, false);
+        return LayoutInflater.from(getContext()).inflate(R.layout.fragment_property_animation, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         ImageView imageView = view.findViewById(R.id.image);
         animator.setTarget(imageView);
-        return view;
     }
 
     @Override

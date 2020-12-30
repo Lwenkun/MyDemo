@@ -4,6 +4,10 @@
     <string name="test_translation">
         Visit us at <xliff:g id="application_homepage">http://my/app/home.html</xliff:g>
     </string>
+    <string name="open_log">打开日志</string>
+    <string name="log">日志</string>
+    <string name="elevation_note">View 的阴影无法超过父视图的边界，所以如果想要有阴影效果，父视图需要留下一定的空间</string>
+    <string name="frame_animation_note">帧动画，点击即可播放</string>
     <plurals name="test_plurals">
         <item quantity="one">I want to buy a Kindle</item>
         <item quantity="other">I want to buy some Kindles</item>

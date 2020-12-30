@@ -36,7 +36,6 @@ open class PathProcessor : AbstractProcessor() {
     ): Boolean {
         val triples: MutableList<Triple<TypeElement, String, String>> = ArrayList()
         val elementsAnnotatedWith = roundEnv?.getElementsAnnotatedWith(Demo::class.java)
-        messager?.printMessage(Diagnostic.Kind.NOTE, elementsAnnotatedWith.toString() + "\n")
         for (element in ElementFilter.typesIn(elementsAnnotatedWith)) {
             if (!instanceOf(element, "android.app.Activity")
                     && !instanceOf(element, "android.app.Fragment")
