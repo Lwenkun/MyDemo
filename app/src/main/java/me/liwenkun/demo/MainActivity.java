@@ -12,31 +12,52 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.liwenkun.demo.DemoBaseActivity.EXTRA_DEMO_TITLE;
+import me.liwenkun.demo.demoframework.DemoBook;
+import me.liwenkun.demo.demoframework.DemoFragmentActivity;
+
+import static me.liwenkun.demo.demoframework.DemoBaseActivity.EXTRA_DEMO_TITLE;
 
 public class MainActivity extends AppCompatActivity {
-
-    private DemoListAdapter demoListAdapter;
-
-    private final MutableLiveData<DemoBook.Category> mutableLiveData
-            = new MutableLiveData<>();
 
     static {
         DemoBook.load();
     }
 
+    public static class MainActivityModel extends ViewModel {
+        private MutableLiveData<DemoBook.Category> category;
+
+        private MutableLiveData<DemoBook.Category> getCategory() {
+            if (category == null) {
+                category = new MutableLiveData<>();
+                category.setValue(DemoBook.getRootCategory()); // 初始化數據
+            }
+            return category;
+        }
+
+        public void setCategory(DemoBook.Category category) {
+            this.category.setValue(category);
+        }
+    }
+
+    private DemoListAdapter demoListAdapter;
+
+    private MainActivityModel mainActivityModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        DemoBook.Category category = DemoBook.getRootCategory();
-        mutableLiveData.setValue(category);
+        mainActivityModel = new ViewModelProvider(this,
+                ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()))
+                .get(MainActivityModel.class);
         RecyclerView rvDemoList = findViewById(R.id.demo_list);
         rvDemoList.setLayoutManager(new LinearLayoutManager(this,
                 LinearLayoutManager.VERTICAL, false));
@@ -44,34 +65,35 @@ public class MainActivity extends AppCompatActivity {
         demoListAdapter.setCallback(new DemoListAdapter.Callback() {
             @Override
             public void onCategoryClick(View view, DemoBook.Category category, int position) {
-                mutableLiveData.setValue(category);
+                mainActivityModel.setCategory(category);
             }
 
             @Override
             public void onDemoItemClick(View view, DemoBook.DemoItem demoItem, int position) {
-                if (Activity.class.isAssignableFrom(demoItem.demoPage)) {
-                    Intent showDemo = new Intent(MainActivity.this, demoItem.demoPage);
-                    showDemo.putExtra(EXTRA_DEMO_TITLE, demoItem.name);
+                if (Activity.class.isAssignableFrom(demoItem.getDemoPage())) {
+                    Intent showDemo = new Intent(MainActivity.this, demoItem.getDemoPage());
+                    showDemo.putExtra(EXTRA_DEMO_TITLE, demoItem.getName());
                     startActivity(showDemo);
-                } else if (Fragment.class.isAssignableFrom(demoItem.demoPage)) {
+                } else if (Fragment.class.isAssignableFrom(demoItem.getDemoPage())) {
                     Intent showDemo = new Intent(MainActivity.this, DemoFragmentActivity.class);
-                    showDemo.putExtra(DemoFragmentActivity.EXTRA_FRAGMENT_NAME, demoItem.demoPage.getName());
-                    showDemo.putExtra(EXTRA_DEMO_TITLE, demoItem.name);
+                    showDemo.putExtra(DemoFragmentActivity.EXTRA_FRAGMENT_NAME, demoItem.getDemoPage().getName());
+                    showDemo.putExtra(EXTRA_DEMO_TITLE, demoItem.getName());
                     startActivity(showDemo);
                 }
             }
         });
-        mutableLiveData.observe(this, category1 -> {
-            demoListAdapter.update(category1);
-            setTitle(category1.name);
+        mainActivityModel.getCategory().observe(this, category -> {
+            demoListAdapter.update(category);
+            setTitle(category.getName());
         });
         rvDemoList.setAdapter(demoListAdapter);
     }
 
     @Override
     public void onBackPressed() {
-        if (mutableLiveData.getValue() != null && mutableLiveData.getValue().getParent() != null) {
-            mutableLiveData.setValue(mutableLiveData.getValue().getParent());
+        DemoBook.Category current = mainActivityModel.getCategory().getValue();
+        if (current != null && current.getParent() != null) {
+            mainActivityModel.getCategory().setValue(current.getParent());
         } else {
             super.onBackPressed();
         }
@@ -184,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
 
         private void bindData(DemoBook.Category category) {
             this.category = category;
-            name.setText(category.name);
+            name.setText(category.getName());
         }
 
         private void setCallback(Callback callback) {
@@ -214,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
 
         private void bindData(DemoBook.DemoItem demoItem) {
             this.demoItem = demoItem;
-            name.setText(demoItem.name);
+            name.setText(demoItem.getName());
         }
 
         private void setCallback(Callback callback) {

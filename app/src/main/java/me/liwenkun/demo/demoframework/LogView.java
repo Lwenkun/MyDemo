@@ -1,4 +1,4 @@
-package me.liwenkun.demo;
+package me.liwenkun.demo.demoframework;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import me.liwenkun.demo.R;
 
 import static me.liwenkun.demo.utils.Utils.px;
 

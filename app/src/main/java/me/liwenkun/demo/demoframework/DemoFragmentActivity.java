@@ -1,8 +1,10 @@
-package me.liwenkun.demo;
+package me.liwenkun.demo.demoframework;
 
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
+
+import me.liwenkun.demo.R;
 
 public class DemoFragmentActivity extends DemoBaseActivity {
 

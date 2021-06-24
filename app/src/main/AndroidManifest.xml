@@ -18,7 +18,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DemoFragmentActivity" />
+        <activity android:name=".demoframework.DemoFragmentActivity" />
+        <activity android:name=".fragment.FragmentActivity" />
         <activity
             android:name=".configuration.ConfigurationActivity"
             android:configChanges="orientation" />

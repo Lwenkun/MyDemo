@@ -1,4 +1,4 @@
-package me.liwenkun.demo;
+package me.liwenkun.demo.demoframework;
 
 import android.graphics.Color;
 

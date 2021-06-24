@@ -63,7 +63,7 @@ open class PathProcessor : AbstractProcessor() {
         for (triple in triples) {
             codeSpec.addStatement(
                 "\$T.add(\$S, \$S, \$T.class)",
-                ClassName.get("me.liwenkun.demo", "DemoBook"),
+                ClassName.get("me.liwenkun.demo.demoframework", "DemoBook"),
                 triple.second,
                 triple.third,
                 ClassName.get(triple.first)
@@ -71,6 +71,7 @@ open class PathProcessor : AbstractProcessor() {
         }
         val javaFile = JavaFile.builder(
                 "me.liwenkun.demo", TypeSpec.classBuilder("DemoRegister")
+                .addModifiers(Modifier.PUBLIC)
                 .addMethod(
                         MethodSpec.methodBuilder("init")
                                 .addModifiers(Modifier.STATIC, Modifier.PUBLIC)

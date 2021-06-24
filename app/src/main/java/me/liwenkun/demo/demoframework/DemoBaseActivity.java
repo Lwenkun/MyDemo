@@ -1,4 +1,4 @@
-package me.liwenkun.demo;
+package me.liwenkun.demo.demoframework;
 
 import android.os.Bundle;
 import android.view.Gravity;
@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import me.liwenkun.demo.R;
 import me.liwenkun.demo.utils.Utils;
 import thereisnospon.codeview.CodeView;
 import thereisnospon.codeview.CodeViewTheme;

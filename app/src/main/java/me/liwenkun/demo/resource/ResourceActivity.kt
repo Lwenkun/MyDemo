@@ -1,10 +1,8 @@
 package me.liwenkun.demo.resource
 
-import android.app.Notification
 import android.os.Bundle
 import android.util.TypedValue
-import me.liwenkun.demo.DemoBaseActivity
-import me.liwenkun.demo.DemoFragmentActivity
+import me.liwenkun.demo.demoframework.DemoBaseActivity
 import me.liwenkun.demo.R
 import me.liwenkun.demo.libannotation.Demo
 import me.liwenkun.demo.libannotation.Source

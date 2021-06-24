@@ -1,23 +1,19 @@
 package me.liwenkun.demo.customview
 
-import android.graphics.Color
 import android.graphics.Outline
-import android.graphics.Path
-import android.os.Build
 import android.os.Bundle
 import android.view.*
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
-import me.liwenkun.demo.DemoBaseFragment
+import me.liwenkun.demo.demoframework.DemoBaseFragment
 import me.liwenkun.demo.R
 import me.liwenkun.demo.libannotation.Demo
 import me.liwenkun.demo.utils.Utils
 
-@Demo("/安卓/自定义View/", "仿搜狗输入法指示器")
+@Demo("/安卓/自定义View/", "自定义小组件集合")
 class CustomViewFragment : DemoBaseFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

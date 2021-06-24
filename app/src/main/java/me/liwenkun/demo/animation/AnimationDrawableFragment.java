@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import me.liwenkun.demo.DemoBaseFragment;
+import me.liwenkun.demo.demoframework.DemoBaseFragment;
 import me.liwenkun.demo.R;
 import me.liwenkun.demo.libannotation.Demo;
 

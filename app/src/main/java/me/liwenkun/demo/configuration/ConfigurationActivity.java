@@ -7,7 +7,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import me.liwenkun.demo.DemoBaseActivity;
+import me.liwenkun.demo.demoframework.DemoBaseActivity;
 import me.liwenkun.demo.R;
 
 public class ConfigurationActivity extends DemoBaseActivity {

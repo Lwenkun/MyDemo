@@ -1,10 +1,12 @@
-package me.liwenkun.demo;
+package me.liwenkun.demo.demoframework;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import me.liwenkun.demo.DemoRegister;
 
 public class DemoBook {
 
@@ -21,6 +23,14 @@ public class DemoBook {
     public static class Item implements Comparable<Item> {
         private Category parent;
         protected String name;
+
+        private Item(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
 
         @Override
         public int compareTo(Item o) {
@@ -42,7 +52,7 @@ public class DemoBook {
         private final Map<String, Category> categoryItems = new HashMap<>();
 
         public Category(String name) {
-            this.name = name;
+            super(name);
         }
 
         public void addSubCategory(Category subItem) {
@@ -68,11 +78,15 @@ public class DemoBook {
 
     public static class DemoItem extends Item {
 
-        Class<?> demoPage;
+        private final Class<?> demoPage;
 
         public DemoItem(String name, Class<?> demoPage) {
-            this.name = name;
+            super(name);
             this.demoPage = demoPage;
+        }
+
+        public Class<?> getDemoPage() {
+            return demoPage;
         }
     }
 
