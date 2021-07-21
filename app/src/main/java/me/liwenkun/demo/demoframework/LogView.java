@@ -3,6 +3,7 @@ package me.liwenkun.demo.demoframework;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,7 +56,15 @@ public class LogView extends FrameLayout {
     }
 
     public LogView(@NonNull Context context) {
-        super(context);
+        this(context, null);
+    }
+
+    public LogView(@NonNull Context context, @Nullable AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public LogView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
         inflate(context, R.layout.layout_log_view, this);
         initView();
     }

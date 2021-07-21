@@ -23,6 +23,7 @@
         <activity
             android:name=".configuration.ConfigurationActivity"
             android:configChanges="orientation" />
+        <activity android:name=".test.TestActivity" />
     </application>
 
 </manifest>

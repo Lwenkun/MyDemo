@@ -1,20 +1,17 @@
 package me.liwenkun.demo.demoframework;
 
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import me.liwenkun.demo.R;
-import me.liwenkun.demo.utils.Utils;
 import thereisnospon.codeview.CodeView;
 import thereisnospon.codeview.CodeViewTheme;
 
@@ -31,14 +28,30 @@ public class DemoBaseActivity extends AppCompatActivity implements Logger {
     private ViewGroup contentView;
     private CodeView codeView;
 
+    private String openLogText;
+    private String closeLogText;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        logView = new LogView(this);
         String demoTitle = getIntent().getStringExtra(EXTRA_DEMO_TITLE);
         setTitle(demoTitle);
         super.setContentView(R.layout.activity_demo_base_activity);
         contentView = findViewById(R.id.content);
+        initCodeView();
+        logView = findViewById(R.id.log_view);
+        if (showLogOnStart()) {
+            logView.setVisibility(View.VISIBLE);
+        }
+        openLogText = getString(R.string.open_log);
+        closeLogText = getString(R.string.close_log);
+    }
+
+    protected boolean showLogOnStart() {
+        return false;
+    }
+
+    private void initCodeView() {
         codeView = findViewById(R.id.code_view);
         codeView.setTheme(CodeViewTheme.ATELIER_FOREST_DARK).fillColor();
         codeView.setEncode("utf-8");
@@ -74,28 +87,21 @@ public class DemoBaseActivity extends AppCompatActivity implements Logger {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(View.generateViewId(), MENU_ID_OPEN_LOG, Menu.NONE, "打开日志");
+        MenuItem openLogView = menu.add(View.generateViewId(), MENU_ID_OPEN_LOG, Menu.NONE,
+                logView.getVisibility() == View.VISIBLE ? closeLogText : openLogText);
+        openLogView.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == MENU_ID_OPEN_LOG) {
-            if (logView.getParent() == null) {
-                FrameLayout.LayoutParams lp
-                        = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        Utils.px(350));
-                lp.gravity = Gravity.BOTTOM;
-                super.addContentView(logView, lp);
-                item.setTitle("关闭日志");
+            if (logView.getVisibility() == View.VISIBLE) {
+                logView.setVisibility(View.GONE);
+                item.setTitle("打开日志");
             } else {
-                if (logView.getVisibility() == View.VISIBLE) {
-                    logView.setVisibility(View.GONE);
-                    item.setTitle("打开日志");
-                } else {
-                    logView.setVisibility(View.VISIBLE);
-                    item.setTitle("关闭日志");
-                }
+                logView.setVisibility(View.VISIBLE);
+                item.setTitle("关闭日志");
             }
             return true;
         } else {
