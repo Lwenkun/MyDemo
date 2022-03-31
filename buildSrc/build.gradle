@@ -1,0 +1,20 @@
+plugins {
+    id 'java-library'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+repositories {
+    google()
+    mavenCentral() //必须
+}
+
+dependencies {
+//    implementation 'com.android.tools.build:gradle-api:4.2.1'
+    implementation 'com.android.tools.build:gradle:4.2.1'
+    implementation gradleApi() //必须
+    implementation localGroovy() //必须
+}
