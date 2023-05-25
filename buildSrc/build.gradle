@@ -2,9 +2,12 @@ plugins {
     id 'java-library'
 }
 
+// 这里设置为 17 其实也没有任何问题，因为 buildSrc 的代码是作为插件运行在 gradle 的 build 脚本中的，gradle 的 jdk 是 17
+// 因此这里可以设置成 jdk <= 17 的任何值，但是呢，com.android.tools.build:gradle 的 target jvm 是 11，所以，实际上
+// 这里的值的范围只能是 11 <= version <= 17
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 repositories {
@@ -14,7 +17,11 @@ repositories {
 
 dependencies {
 //    implementation 'com.android.tools.build:gradle-api:4.2.1'
-    implementation 'com.android.tools.build:gradle:4.2.1'
+    implementation 'com.android.tools.build:gradle:8.0.1'
+    implementation "org.ow2.asm:asm:9.5"
+    implementation "org.ow2.asm:asm:9.5"
+    implementation "org.ow2.asm:asm-util:9.5"
+    implementation "org.ow2.asm:asm-commons:9.5"
     implementation gradleApi() //必须
     implementation localGroovy() //必须
 }

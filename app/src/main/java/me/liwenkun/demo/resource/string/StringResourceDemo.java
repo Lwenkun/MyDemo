@@ -1,9 +1,17 @@
 package me.liwenkun.demo.resource.string;
 
-import android.content.res.TypedArray;
+import static me.liwenkun.demo.resource.string.SpanUtil.bold;
+import static me.liwenkun.demo.resource.string.SpanUtil.color;
+import static me.liwenkun.demo.resource.string.SpanUtil.italic;
+
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ScaleXSpan;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,16 +20,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import me.liwenkun.demo.demoframework.DemoBaseFragment;
 import me.liwenkun.demo.R;
+import me.liwenkun.demo.demoframework.DemoBaseFragment;
 import me.liwenkun.demo.libannotation.Demo;
 import thereisnospon.codeview.CodeView;
 
-import static me.liwenkun.demo.resource.string.SpanUtil.bold;
-import static me.liwenkun.demo.resource.string.SpanUtil.color;
-import static me.liwenkun.demo.resource.string.SpanUtil.italic;
-
-@Demo(category = "/安卓/资源", title = "字符资源")
+@Demo(title = "字符资源")
 public class StringResourceDemo extends DemoBaseFragment {
 
     @Nullable
@@ -46,12 +50,19 @@ public class StringResourceDemo extends DemoBaseFragment {
         CodeView spanSourceCode = view.findViewById(R.id.spanned_text_source_code);
         spanSourceCode.showCode(SpanUtil.source);
 
-                        TextView tvSpannedText = view.findViewById(R.id.tv_spanned_text);
+        TextView tvSpannedText = view.findViewById(R.id.tv_spanned_text);
         CharSequence text = bold(italic("hello"),
                 color(Color.RED, "world"));
         tvSpannedText.setText(text);
-        TypedArray array = getContext().obtainStyledAttributes(null, R.styleable.PropertySet, 0, 0);
-//        array.getString(R.)
 
+        TextView tvSpannedText2 = view.findViewById(R.id.tv_spanned_text2);
+        SpannableString spannableString = new SpannableString("这是一段富文本");
+        spannableString.setSpan(new StyleSpan(Typeface.BOLD){}, 0, 3,
+                Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        spannableString.setSpan(new ScaleXSpan(2f){}, 2, 5,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        spannableString.setSpan(new StyleSpan(Typeface.ITALIC){}, 1, 4,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        tvSpannedText2.setText(spannableString);
     }
 }

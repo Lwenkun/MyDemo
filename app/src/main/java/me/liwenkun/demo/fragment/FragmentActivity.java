@@ -27,7 +27,7 @@ import me.liwenkun.demo.demoframework.Logger;
 import me.liwenkun.demo.libannotation.Demo;
 import me.liwenkun.demo.utils.Utils;
 
-@Demo(category = "/安卓/fragment", title = "Fragment 事务和生命周期的关系")
+@Demo(title = "Fragment 事务和生命周期的关系")
 public class FragmentActivity extends DemoBaseActivity {
 
     private static final Method GET_ACTIVE_FRAGMENT = getActiveFragmentMethod();
@@ -137,7 +137,7 @@ public class FragmentActivity extends DemoBaseActivity {
 
     private static Method getActiveFragmentMethod() {
         try {
-            Class<?> fragmentManagerImpl = Class.forName("androidx.fragment.app.FragmentManagerImpl");
+            Class<?> fragmentManagerImpl = Class.forName("androidx.fragment.app.FragmentManager");
             Method method = fragmentManagerImpl.getDeclaredMethod("getActiveFragments");
             method.setAccessible(true);
             return method;
@@ -180,21 +180,21 @@ public class FragmentActivity extends DemoBaseActivity {
     }
 
     private void logFragmentInfo() {
-        List<Fragment> active = null;
         if (GET_ACTIVE_FRAGMENT != null) {
             try {
                 // noinspection unchecked
-                active = (List<Fragment>) GET_ACTIVE_FRAGMENT.invoke(getSupportFragmentManager());
+                List<Fragment> active = (List<Fragment>) GET_ACTIVE_FRAGMENT.invoke(getSupportFragmentManager());
+                if (active != null) {
+                    log("fragmentInfo->active: " + "{count: " + active.size()
+                            + ", fragments: " + active + "}", Logger.COLOR_INFO);
+                }
             } catch (IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         }
-        if (active != null) {
-            log("fragmentInfo->active: " + "{count: " + active.size()
-                    + ", fragments: " + active.toString() + "}", Logger.COLOR_INFO);
-        }
+
         List<Fragment> added = getSupportFragmentManager().getFragments();
         log("fragmentInfo->added: " + "{count: " + added.size()
-                + ", fragments: " + added.toString() + "}", Logger.COLOR_INFO);
+                + ", fragments: " + added + "}", Logger.COLOR_INFO);
     }
 }

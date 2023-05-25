@@ -1,4 +1,4 @@
-package me.liwenkun.demo.test;
+package me.liwenkun.demo.system;
 
 import android.os.Build;
 import android.os.Bundle;
@@ -12,7 +12,7 @@ import androidx.annotation.RequiresApi;
 import me.liwenkun.demo.demoframework.DemoBaseActivity;
 import me.liwenkun.demo.libannotation.Demo;
 
-@Demo(category = "/系统行为测试", title = "同步屏障")
+@Demo(title = "同步屏障")
 public class TestActivity extends DemoBaseActivity {
     TextView textView;
     @Override

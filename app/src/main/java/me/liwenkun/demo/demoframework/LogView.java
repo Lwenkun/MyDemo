@@ -2,20 +2,31 @@ package me.liwenkun.demo.demoframework;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -27,31 +38,57 @@ import java.util.Locale;
 
 import me.liwenkun.demo.R;
 
-import static me.liwenkun.demo.utils.Utils.px;
-
 public class LogView extends FrameLayout {
 
-    private final StringBuilder temp = new StringBuilder();
-
     private ListView lvLogs;
+    private boolean interactionWithLogs = false;
+    private boolean reachEnd = true;
 
     private final SimpleDateFormat simpleDateFormat
             = new SimpleDateFormat("[HH:mm:ss.SSS] ", Locale.getDefault());
 
-    private boolean enableAutoScroll;
 
     private final List<LogItem> logs = new ArrayList<>();
     private ArrayAdapter<LogItem> logAdapter;
 
+    List<String> tags = new ArrayList<String>(){{
+        add("默认");
+    }};
+    String selectedTag = "";
+    private ArrayAdapter<String> tagAdapter;
+
     private static class LogItem {
-        String log;
+        private SpannableStringBuilder styledText;
+        private String promptChar;
+        private String tag;
+        private String msg;
         @ColorInt
-        int color;
+        private int color;
+        private String dateString;
+
+        private CharSequence getStyledText() {
+            if (styledText == null) {
+                styledText = new SpannableStringBuilder()
+                        .append(dateString)
+                        .append(promptChar == null ? "" : promptChar,
+                                new ForegroundColorSpan(Color.GREEN),
+                                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                if (!TextUtils.isEmpty(tag)) {
+                    styledText.append(tag, new BackgroundColorSpan(Color.GREEN & 0x55FFFFFF),
+                                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                            .append(" ");
+                }
+                if (!TextUtils.isEmpty(msg)) {
+                    styledText.append(msg);
+                }
+            }
+            return styledText;
+        }
 
         @NotNull
         @Override
         public String toString() {
-            return log;
+            return tag + msg;
         }
     }
 
@@ -69,33 +106,33 @@ public class LogView extends FrameLayout {
         initView();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void initView() {
         lvLogs = findViewById(R.id.logs);
-        View handle = findViewById(R.id.handle);
+        View handle = findViewById(R.id.log_view_toolbar);
         handle.setOnTouchListener(new OnTouchListener() {
-            float lastY = 0;
-            float offsetLoss = 0;
+            float downY;
+            int originHeight;
+
             @SuppressLint("ClickableViewAccessibility")
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
-                    offset(lastY - event.getRawY());
+                    offset(event.getRawY());
                 } else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-                    offsetLoss = 0;
+                    v.setActivated(false);
+                } else if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    downY = event.getRawY();
+                    originHeight = getHeight();
+                    v.setActivated(true);
                 }
-                lastY = event.getRawY();
                 return false;
             }
 
             private void offset(float y) {
-                y = Math.max(-(getHeight() - px(40)), Math.min(getTop(), y));
                 ViewGroup.LayoutParams lp = getLayoutParams();
-                offsetLoss += y - (int) y;
-                if (offsetLoss > 1) {
-                    y = y +1;
-                    offsetLoss = offsetLoss - 1;
-                }
-                lp.height += y;
+                lp.height = Math.min(Math.max(originHeight - (int)(y - downY), handle.getHeight()),
+                        ((ViewGroup) getParent()).getHeight());
                 requestLayout();
             }
         });
@@ -109,13 +146,30 @@ public class LogView extends FrameLayout {
                 if (logItem != null) {
                     TextView tv = view.findViewById(R.id.log);
                     tv.setTextColor(logItem.color);
+                    tv.setText(logItem.getStyledText());
                 }
                 return view;
             }
         };
         lvLogs.setAdapter(logAdapter);
+        lvLogs.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+
+
+        lvLogs.setOnTouchListener((v, event) -> {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                interactionWithLogs = true;
+                lvLogs.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_DISABLED);
+            } else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+                interactionWithLogs = false;
+                if (reachEnd) {
+                    lvLogs.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+                }
+            }
+            return false;
+        });
 
         lvLogs.setOnScrollListener(new AbsListView.OnScrollListener() {
+
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
             }
@@ -124,31 +178,77 @@ public class LogView extends FrameLayout {
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 if ((firstVisibleItem + visibleItemCount) == totalItemCount) {
                     View lastVisibleItemView = view.getChildAt(view.getChildCount() - 1);
-                    enableAutoScroll = lastVisibleItemView != null
+                    reachEnd = lastVisibleItemView != null
                             && lastVisibleItemView.getBottom() + view.getPaddingBottom() == view.getHeight();
                 } else {
-                    enableAutoScroll = false;
+                    reachEnd = false;
+                }
+                if (reachEnd && !interactionWithLogs) {
+                    view.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
                 }
             }
         });
+
+        Toolbar logViewToolbar = findViewById(R.id.log_view_toolbar);
+        Spinner spinner = new Spinner(getContext());
+        spinner.setGravity(Gravity.END);
+        tagAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1,
+                new ArrayList<>(tags)){
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                ((TextView) view).setGravity(Gravity.END|Gravity.CENTER_VERTICAL);
+                return view;
+            }
+        };
+        spinner.setAdapter(tagAdapter);
+        logViewToolbar.getMenu().add(Menu.NONE, 1, 0,
+                        spinner.getSelectedItem().toString())
+                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS)
+                .setActionView(spinner);
+        logViewToolbar.getMenu().add(Menu.NONE, 2, 1,
+                        "清除日志")
+                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
+        logViewToolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 2) {
+                deleteAllLogs();
+                return true;
+            }
+            return false;
+        });
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedTag = position == 0 ? "" : tags.get(position);
+                logAdapter.getFilter().filter(selectedTag);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
     }
 
     public void deleteAllLogs() {
         logAdapter.clear();
+        logAdapter.getFilter().filter(selectedTag);
     }
 
-    public void print(String msg, int color, String promptChar) {
-        temp.delete(0, temp.length());
-        if (!TextUtils.isEmpty(promptChar)) {
-            temp.append(promptChar);
-        }
-        temp.append(simpleDateFormat.format(new Date())).append(msg);
+    public void print(String tag, String msg, int color, String promptChar) {
         LogItem log = new LogItem();
-        log.log = temp.toString();
+        log.dateString = simpleDateFormat.format(new Date());
+        log.promptChar = promptChar;
+        log.msg = msg;
         log.color = color;
+        log.tag = tag;
         logAdapter.add(log);
-        if (enableAutoScroll) {
-            post(this::scrollToBottom);
+        logAdapter.getFilter().filter(selectedTag);
+
+        if (!TextUtils.isEmpty(tag) && !tags.contains(tag)) {
+            tags.add(tag);
+            tagAdapter.add(tag);
         }
     }
 

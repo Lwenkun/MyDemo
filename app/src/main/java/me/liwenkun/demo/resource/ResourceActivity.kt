@@ -7,7 +7,7 @@ import me.liwenkun.demo.R
 import me.liwenkun.demo.libannotation.Demo
 import me.liwenkun.demo.libannotation.Source
 
-@Demo("/安卓/资源", "资源获取api")
+@Demo(title = "资源获取api")
 class ResourceActivity : DemoBaseActivity() {
 
      companion object {

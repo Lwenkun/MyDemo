@@ -45,4 +45,15 @@ public class DemoBaseFragment extends Fragment implements Logger {
             logger.deleteAllLogs();
         }
     }
+
+    public DemoFragmentActivity getDemoFragmentActivity() {
+        return ((DemoFragmentActivity) getActivity());
+    }
+
+    @Override
+    public void log(String tag, String message, int color, String promptChar) {
+        if (logger != null) {
+            logger.log(tag, message, color, promptChar);
+        }
+    }
 }

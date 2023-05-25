@@ -4,15 +4,48 @@ plugins {
     id 'kotlin-kapt'
 }
 
+// 当前 java 插件的 toolchain 继承自 gradle，为 jdk17，如果这里不指明 target，那么 target 默认就是 17，
+// 如果主库使用方案一解决 kapt 的问题，那么 kapt 的 jvmToolchain 就是 1.8， 这就会导致，kapt 中的 javac 无法加载此注解处理器。
+// 所以如非必要，target 设得越低越好，因为高版本的 jdk 能够加载低版本的字节码，这里将其设为 1.8
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_7
-    targetCompatibility = JavaVersion.VERSION_1_7
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    // 编译该库的 jdk 设成多少不重要，只要大于 1.8 就行，否则编译不出 target 为 1.8 的字节码，这里将 jdk 改成 11 也没问题
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
 }
 
+// 和主库一样，这块代码也可以省略，因为后面已经指定了 kotlin 的 jvmToolchain
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+// 这里使用方案一解决 kapt jvmTarget 的问题。使用该方法的前提是 auto-service 使用的 jdk <= 1.8 编译的。
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "com.google.auto.service:auto-service-annotations:1.0-rc6"
     kapt "com.google.auto.service:auto-service:1.0-rc6"
-    implementation 'com.squareup:javapoet:1.12.1'
+    implementation 'com.squareup:javapoet:1.13.0'
     implementation project(':libannotation')
 }
+
+//task uninstall(type: Exec) {
+//    doLast {
+//        // 通过变量定义 adb 命令及其参数
+//        def adbCmd = 'adb'
+//        def adbArgs = ['uninstall', android.defaultConfig.applicationId]
+//
+//        // 设置 Exec task 的 commandLine 属性，执行 adb 命令
+//        commandLine "${adbCmd}", adbArgs
+//    }
+//}
+//
+//preBuild.dependsOn(uninstall)
+//
+//tasks.preBuild.dependsOn()

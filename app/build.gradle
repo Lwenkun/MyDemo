@@ -1,18 +1,34 @@
+// plugin 代码块会被 gradle 单独处理。原因是：编译以及运行脚本的时候，脚本是不知道到插件中的类的，这时会出现找不到类的错误。
+// 为了解决这个问题，gradle 单独处理 plugins 中的代码，解析出插件，将插件作为脚本编译和运行的依赖，这样脚本就能正常
+// 编译运行了，因此我们在脚本中能正常使用脚本中定义类。
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-kapt'
-    id 'me.liwenkun.custom-plugin'
+//    id 'me.liwenkun.custom-plugin'
 }
 
+// 1. gradle 的 jdk 是通过 IDE->settings->gradle-> jdk 设置的，这个 jdk 用来运行 gradle 框架和 gradle 脚本，
+// 这个 jdk 也可以通过 org.gradle.java.home 属性进行指定。
+
+// 2. 通常而言，各种插件的默认 jdk 继承自 java 插件的 jdk，而 java 插件的默认 jdk 继承自 gradle 的 jdk，
+// 而插件内的各种任务的 jdk 默认继承自任务所属插件的 jdk。插件和任务也可以设置自己的 jdk，就看它们有没有提供相应的接口让用户进行修改，
+// gradle 建议插件开发者提供相应的接口让用户可以覆盖默认 jdk，详见：https://docs.gradle.org/current/userguide/toolchains.html。
+// jdk 的版本和 target 版本不是一个一回事，jdk 版本是工具链的版本，而 target 版本是字节码文件的版本，低版本的字节码文件
+// 可以在高版本的 jdk (jvm) 上运行，反之不行。
+// 插件（或者说任务）的 target version 和它的 jdk version 不一定是保持一致的，这个得看插件的选择。但通常插件（或者任务）会提供接口让用户修改，
+// 比如 compileOptions 中的 targetCompatibility（当前版本的 AGP 默认值是 1.8） 以及 kotlinOptions 块中的 jvmTarget（默认和 jdk 保持一致），
+// 前者指定 Java 的 target，后者指定的是 kotlin 的 target。
+
+// 3. jvm toolchain 和 jdk 这两个概念差不多是等价的，可以互换。
+
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.0"
+    compileSdk 33
 
     defaultConfig {
         applicationId "me.liwenkun.demo"
-        minSdkVersion 21
-        targetSdkVersion 30
+        minSdk 21
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -26,31 +42,126 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
+        // 这个属性设置为 true, 就能够让 AGP 插件对 api 进行脱糖处理，
+        // 但也只是对 api 进行脱糖，对语法特性脱糖需要用到下面两个字段
+        coreLibraryDesugaringEnabled true
+        // sourceCompatibility 必须小于等于 targetCompatibility，否则 javac 会报错，这两个值分别对应 javac
+        // 的 -source 和 -target 选项。javac 并不会和 d8 一样，自动根据 targetCompatibility 对语法语法进行脱糖，
+        // 否则 d8 也没有存在的必要了。
+        // 另外，这两个字段需要大于等于 1.8，否则 d8 就会不对源码和库进行语法功能的脱糖处理，因为 d8 认为既然 javac
+        // 都已经把源码编译成了 1.7 版本，就没必要脱糖了，d8 会跳过脱糖直接把 java 字节码转译成 dalvik/art 字节码。
+        // 但问题是，即使主库的 target 为 1.7，但某些第三方库的 target 可能为 1.8。由于只有在 api >= 26 的平台上，
+        // 对应的虚拟机才有能用于转译 invokeDynamic 的字节码 invoke-customs。所以 d8 遇到那些 target 为 1.8 的
+        // 第三方库中的 invokeDynamic 指令，无能为力，只能报错：（这段解释是根据现象推测的）
+        // invoke-customs are only supported starting with android o (--min-api 26)
+        // 解决办法是，要么让  sourceCompatibility == targetCompatibility > 1.8 让 d8 进行脱糖，要么设置
+        // minSdk >= 26，这样 d8 就直接将 invokeDynamic 指令转译成 invoke-customs 指令。
+        //
+        // 注意，编译 java 用的依然是 jdk17（在 IDE 中设置的值），只是指定了 -source 和 -target 选项为 1.8 而已
         targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
     }
+    // 指定 kotlin 编译器生成的 java 字节码版本，必须和 targetCompatibility 保持一致，否则报错.
+    // 其实这里可以省略，因为后面已经指定了 kotlin 的 jvmToolchain
     kotlinOptions {
+        // jvmTarget 的值默认和 kotlin 的 jvmToolchain 保持一致
         jvmTarget = '1.8'
     }
 
+    // kotlin 为了让被注解的 kotlin 类能够被注解处理器处理，会让 kapt 先行针对被注解的 kotlin
+    // 类生成对应的 Stub 字节码（只有类和方法声明），然后内部调用 javac（应该是利用 -pro-only 选项）处理这些 Stub 字节码和 java 源码。
+    // 也就是说，无论是 java 源码还是 kotlin 源码的注解，都是被 kapt 插件处理的，而非 java 插件。
+    // 这些生成出来的 Stub 字节码的 target 要保持和 targetCompatibility 一致，也许是因为不一致会导致一些潜在的问题，
+    // 当他们不一致时，kapt 的 kaptGenerateStubsDebugKotlin 任务会直接报错：
+    // 'compileDebugJavaWithJavac' task (current target is 1.8) and 'kaptGenerateStubsDebugKotlin' task (current target is 17) jvm target compatibility should be set to the same Java version.
+    //
+    // 当 IDE settings 中设置 gradle 的 jdk 版本为 17，kotlinOptions.jvmTarget 为 1.8，
+    // 且 sourceCompatibility == targetCompatibility == 1.8 时，就会出现上面那种错误，按道理 kapt 的 jvmTarget
+    // 应该继承自 kotlinOptions.jvmTarget，但实际并没有，这应该是个 bug。有两种解决方法：
+    // 一是设置 kotlin 的 jvmToolchain 版本为 1.8，这样做的结果是让 kotlin 和 kapt 使用 jdk1.8 来执行相关任务，
+    // 同时让他们默认的 jvmTarget 也变为 1.8。
+    // 还有一种方式是：
+    // tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    //    kotlinOptions {
+    //        jvmTarget = "11"
+    //    }
+    // }
+    // 这种方式手动将每一个 kotlin 编译任务(当然也包括 kaptGenerateStubsDebugKotlin)的 jvmTarget 为 1.8。
+    // 其实还有第三种方式，就是设置 kotlinOptions.jvmTarget = 17，sourceCompatibility = targetCompatibility = 17，
+    // 而 kapt 的默认 jvmTarget 也为 17，三者一致，同样能编译通过
+    // https://youtrack.jetbrains.com/issue/KT-55947/Unable-to-set-kapt-jvm-target-version
     kapt {
         useBuildCache = false
     }
+
+    namespace 'me.liwenkun.demo'
 }
 
+// 直接设定 java 插件的 toolchain，java、kotlin、kapt 等插件都将会遵守这个值。
+// 通过 org.gradle.java.home （或者 IDE）也能达到同样的目的，但两者还是有所区别，org.gradle.java.home (IDE) 指定的是
+// gradle 的 jdk 版本，就算这里指定了 java toolchain 的版本，这个脚本本身依然运行在  org.gradle.java.home (IDE) 指定的 jdk 中。
+
+java {
+    // java 插件的这两个属性貌似没有用，AGP 会用 compileOptions 中的对应字段覆盖掉。
+//    sourceCompatibility JavaVersion.VERSION_17
+//    targetCompatibility JavaVersion.VERSION_17
+    toolchain {
+        // 这里的设置其实可以省略，因为当前 gradle 的 jdk 就是 17
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+// 修复 kapt target 问题的的第一种方式。设置 kotlin 扩展的 toolchain，可以让所有 kotlin 相关任务使用此 jdk，kapt 也会遵守此值。
+// 这种修复方式有两个问题：一是 kapt 使用 jdk1.8 来进行注解处理（主要是使用 javac），那么注解处理器的 target 必须 <= 1.8
+// 但是 room 和 dagger 这两个注解处理器的当前版本都是基于 jdk11 编译的，jdk1.8 的 javac 是无法加载运行这两个注解处理器的，
+// 导致无法生成代码。第二个问题是，因为将 kapt toolchain 切换到 1.8，gradle 会使用其他进程而非当前进程来运行 kapt 的任务。
+// 原本我们可以通过 Run/Debug Configuration 添加对 :app:kaptDebugKotlin 这个 gradle 任务的调试配置来调试注解的，
+// 但如果注解处理器运行的进程和 gradle 不一致，就会导致调试器无法附加到注解处理器所在进程，进而无法断点调试。
+// 所以此解决方案 pass
+//kotlin {
+//    jvmToolchain {
+//        // 设置 kotlin toolchain 为 1.8，主要目的是为了让 kapt 的 jvmTarget 为 1.8
+//        languageVersion.set(JavaLanguageVersion.of(8))
+//    }
+//}
+
+// 修复 kapt target 问题的第二种方式，对所有 KotlinCompile 类型的任务，设置 jvmTarget 为 1.8。
+// kaptGenerateStubsDebugKotlin 应该也属于 KotlinCompile 类型，所以此方法也能解决问题
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+
 dependencies {
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.3.2'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.2.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation "androidx.room:room-runtime:$room_version"
+    // 对 kotlin 源码使用注解处理器时，需要用 kapt 替换 annotationProcessor,
+    // kapt 内部使用了 javac 来运行注解处理器
+    kapt "androidx.room:room-compiler:$room_version"
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation project(path: ':libannotation')
     implementation 'thereisnospon.codeview:codeview:0.3.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     kapt project(path: ':libcompiler')
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+    implementation "com.google.dagger:dagger:$dagger_version"
+    kapt "com.google.dagger:dagger-compiler:$dagger_version"
+}
+
+// 这种定义任务的 dsl 不符合 groovy 的语法, 是 Gradle 定制的 dsl，
+// 通过 TaskDefinitionScriptTransformer 实现，gradle 的语法是 groovy 语法的超集
+task hello(type: Exec) {
+
 }

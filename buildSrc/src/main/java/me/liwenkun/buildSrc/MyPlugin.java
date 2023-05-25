@@ -10,20 +10,21 @@ import com.android.build.api.transform.TransformInput;
 import com.android.build.api.transform.TransformInvocation;
 import com.android.build.api.transform.TransformOutputProvider;
 import com.android.build.gradle.AppExtension;
-import com.android.build.gradle.internal.pipeline.TransformManager;
-import com.android.utils.FileUtils;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class MyPlugin implements Plugin<Project> {
+
 
     private static final class MyTransformer extends Transform {
 
@@ -34,12 +35,12 @@ public class MyPlugin implements Plugin<Project> {
 
         @Override
         public Set<QualifiedContent.ContentType> getInputTypes() {
-            return TransformManager.CONTENT_CLASS;
+            return Collections.singleton(QualifiedContent.DefaultContentType.CLASSES);
         }
 
         @Override
         public Set<? super QualifiedContent.Scope> getScopes() {
-            return TransformManager.SCOPE_FULL_PROJECT;
+            return Collections.singleton(QualifiedContent.Scope.PROJECT);
         }
 
         @Override
@@ -93,12 +94,12 @@ public class MyPlugin implements Plugin<Project> {
 
         @Override
         public Set<QualifiedContent.ContentType> getInputTypes() {
-            return TransformManager.CONTENT_CLASS;
+            return Collections.singleton(QualifiedContent.DefaultContentType.CLASSES);
         }
 
         @Override
         public Set<? super QualifiedContent.Scope> getScopes() {
-            return TransformManager.SCOPE_FULL_PROJECT;
+            return Collections.singleton(QualifiedContent.Scope.PROJECT);
         }
 
         @Override

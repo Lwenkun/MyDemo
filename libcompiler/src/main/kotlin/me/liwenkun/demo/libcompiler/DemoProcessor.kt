@@ -15,7 +15,11 @@ import javax.tools.Diagnostic
 
 
 @AutoService(Processor::class)
-open class PathProcessor : AbstractProcessor() {
+open class DemoProcessor : AbstractProcessor() {
+
+    companion object {
+        const val packageName  = "me.liwenkun.demo"
+    }
 
     private var messager: Messager? = null
     private var elementUtils: Elements? = null
@@ -34,7 +38,7 @@ open class PathProcessor : AbstractProcessor() {
         annotations: MutableSet<out TypeElement>?,
         roundEnv: RoundEnvironment?
     ): Boolean {
-        val triples: MutableList<Triple<TypeElement, String, String>> = ArrayList()
+        val demos: MutableList<Triple<TypeElement, String, String>> = ArrayList()
         val elementsAnnotatedWith = roundEnv?.getElementsAnnotatedWith(Demo::class.java)
         for (element in ElementFilter.typesIn(elementsAnnotatedWith)) {
             if (!instanceOf(element, "android.app.Activity")
@@ -42,10 +46,18 @@ open class PathProcessor : AbstractProcessor() {
                     && !instanceOf(element, "androidx.fragment.app.Fragment")) {
                 messager?.printMessage(Diagnostic.Kind.ERROR, "@Demo 注解只能用于 Activity 或 Fragment")
             }
-            val annotation = element.getAnnotation(Demo::class.java)
-            triples.add(Triple(element, annotation.category, annotation.title))
+            val demoAnno = element.getAnnotation(Demo::class.java)
+            if (demoAnno.category.isNotEmpty()) {
+                Triple(element, demoAnno.category, demoAnno.title)
+            } else {
+                Triple(element,  element.qualifiedName
+                    .substring(packageName.length, element.qualifiedName.lastIndexOf('.'))
+                    .replace('.', '/'), demoAnno.title)
+            }.run {
+                demos.add(this)
+            }
         }
-        processRegister(triples)
+        registerDemos(demos)
         return true
     }
 
@@ -55,12 +67,12 @@ open class PathProcessor : AbstractProcessor() {
                 elementUtils?.getTypeElement(className)?.asType()) == true
     }
 
-    private fun processRegister(triples: List<Triple<TypeElement, String, String>>) {
-        if (triples.isEmpty()) {
+    private fun registerDemos(demos: List<Triple<TypeElement, String, String>>) {
+        if (demos.isEmpty()) {
             return
         }
         val codeSpec = CodeBlock.builder()
-        for (triple in triples) {
+        for (triple in demos) {
             codeSpec.addStatement(
                 "\$T.add(\$S, \$S, \$T.class)",
                 ClassName.get("me.liwenkun.demo.demoframework", "DemoBook"),

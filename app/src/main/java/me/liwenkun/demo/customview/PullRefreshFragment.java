@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import me.liwenkun.demo.R;
 import me.liwenkun.demo.libannotation.Demo;
 
-@Demo(category = "/安卓/自定义View", title = "下拉刷新组件")
+@Demo(title = "下拉刷新组件")
 public class PullRefreshFragment extends Fragment {
 
     @Override

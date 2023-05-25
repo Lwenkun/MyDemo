@@ -1,5 +1,7 @@
 package me.liwenkun.demo.demoframework;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,10 +17,7 @@ import me.liwenkun.demo.R;
 import thereisnospon.codeview.CodeView;
 import thereisnospon.codeview.CodeViewTheme;
 
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-
 public class DemoBaseActivity extends AppCompatActivity implements Logger {
-
     private static final int MENU_ID_OPEN_LOG = View.generateViewId();
 
     public static final String EXTRA_DEMO_TITLE = "demo_title";
@@ -55,10 +54,9 @@ public class DemoBaseActivity extends AppCompatActivity implements Logger {
         codeView = findViewById(R.id.code_view);
         codeView.setTheme(CodeViewTheme.ATELIER_FOREST_DARK).fillColor();
         codeView.setEncode("utf-8");
-        codeView.setVisibility(View.GONE);
     }
 
-    protected void setSourceCode(String sourceCode) {
+    public void setSourceCode(String sourceCode) {
         codeView.showCode(sourceCode);
         codeView.setVisibility(View.VISIBLE);
     }
@@ -129,6 +127,11 @@ public class DemoBaseActivity extends AppCompatActivity implements Logger {
 
     @Override
     public void log(String message, int color, String promptChar) {
-        logView.print(message, color, promptChar);
+        log("", message, color, promptChar);
+    }
+
+    @Override
+    public void log(String tag, String message, int color, String promptChar) {
+        logView.print(tag, message, color, promptChar);
     }
 }

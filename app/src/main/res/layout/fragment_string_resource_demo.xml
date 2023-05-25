@@ -37,4 +37,9 @@
         android:id="@+id/tv_spanned_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/tv_spanned_text2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 </LinearLayout>

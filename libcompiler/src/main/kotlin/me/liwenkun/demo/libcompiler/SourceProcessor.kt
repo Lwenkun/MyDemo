@@ -2,11 +2,9 @@ package me.liwenkun.demo.libcompiler
 
 import com.google.auto.service.AutoService
 import com.squareup.javapoet.*
-import com.sun.source.tree.ClassTree
-import com.sun.source.util.TreePathScanner
-import com.sun.source.util.Trees
 import me.liwenkun.demo.libannotation.Source
 import java.io.File
+import java.lang.management.ManagementFactory
 import java.net.URI
 import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
@@ -23,27 +21,33 @@ import javax.tools.*
 @SupportedAnnotationTypes("me.liwenkun.demo.libannotation.Source")
 class SourceProcessor : AbstractProcessor() {
 
-    private var messager: Messager? = null
-    private var elementUtils: Elements? = null
-    private var typeUtils: Types? = null
-    private var filer: Filer? = null
+    private lateinit var messager: Messager
+    private lateinit var elementUtils: Elements
+    private lateinit var typeUtils: Types
+    private lateinit var filer: Filer
 
-    private lateinit var trees: Trees
+    private val layout by lazy {
+        findLayouts()
+    }
 
-    override fun init(processingEnv: ProcessingEnvironment?) {
+    override fun init(processingEnv: ProcessingEnvironment) {
         super.init(processingEnv)
-        messager = processingEnv?.messager
-        elementUtils = processingEnv?.elementUtils
-        typeUtils = processingEnv?.typeUtils
-        filer = processingEnv?.filer
-        trees = Trees.instance(processingEnv)
+        messager = processingEnv.messager
+        elementUtils = processingEnv.elementUtils
+        typeUtils = processingEnv.typeUtils
+        filer = processingEnv.filer
+
+        val runtime = ManagementFactory.getRuntimeMXBean()
+        val name = runtime.name
+        val pid = name.substring(0, name.indexOf("@")).toLong()
+        messager.printMessage(Diagnostic.Kind.NOTE,"注解处理器当前进程 pid：$pid")
+        messager.printMessage(Diagnostic.Kind.NOTE,"注解处理器当前 vm 版本：${System.getProperty("java.version")}")
     }
 
     override fun process(
         annotations: MutableSet<out TypeElement>?,
         roundEnv: RoundEnvironment?
     ): Boolean {
-
         val elementsAnnotatedWith = roundEnv?.getElementsAnnotatedWith(Source::class.java)
         val variableElements = ElementFilter.fieldsIn(elementsAnnotatedWith)
 
@@ -57,13 +61,14 @@ class SourceProcessor : AbstractProcessor() {
             val className = ClassName.get(element.enclosingElement as TypeElement)
             val topClassName = className.topLevelClassName().canonicalName()
 
-            val sourceDir = findLayouts()
+            val sourceDir = layout
             var sourceFile = File(sourceDir, topClassName.replace('.', '/') + ".kt")
             if (!sourceFile.exists()) {
                 sourceFile = File(sourceDir, topClassName.replace('.', '/') + ".java")
             }
             if (!sourceFile.exists()) {
-                messager?.printMessage(Diagnostic.Kind.ERROR, "source file does not exist for class $topClassName \n")
+                messager.printMessage(Diagnostic.Kind.ERROR,
+                    "source file does not exist for class $topClassName \n")
             }
 
             codeSpec.addStatement(

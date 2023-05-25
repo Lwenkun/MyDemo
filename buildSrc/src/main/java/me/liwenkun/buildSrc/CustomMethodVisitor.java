@@ -1,18 +1,18 @@
 package me.liwenkun.buildSrc;
- 
+
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
 import org.objectweb.asm.commons.Method;
- 
+
 public class CustomMethodVisitor extends AdviceAdapter {
  
     protected CustomMethodVisitor(int api, MethodVisitor methodVisitor, int access, String name, String descriptor) {
         super(api, methodVisitor, access, name, descriptor);
     }
- 
+
     private int start;
- 
+
     /**
      * 方法进入的时候执行
      */
@@ -27,10 +27,9 @@ public class CustomMethodVisitor extends AdviceAdapter {
         //store指令 将方法执行结果从操作数栈存储到局部变量
         storeLocal(start);
     }
- 
+
     /**
      * 方法返回的时候执行
-     * @param opcode
      */
     @Override
     protected void onMethodExit(int opcode) {
@@ -39,7 +38,7 @@ public class CustomMethodVisitor extends AdviceAdapter {
         int end = newLocal(Type.LONG_TYPE);
         //store指令 将方法执行结果从操作数栈存储到局部变量
         storeLocal(end);
- 
+
         getStatic(Type.getType("Ljava/lang/System;"),"out",Type.getType( "Ljava/io/PrintStream;"));
         newInstance(Type.getType("Ljava/lang/StringBuilder;"));
         dup();

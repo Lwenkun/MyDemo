@@ -4,9 +4,27 @@ plugins {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_7
-    targetCompatibility = JavaVersion.VERSION_1_7
+    // 这里不能设置为 17，因为 libcompiler 的 target 为 1.8，作为 libcompiler 的依赖，
+    // libannotation 的 target 只能比 1.8 低。
+    // 这很好理解，库的 target 表明了自己期望运行的 jvm 版本，如果库的依赖的 target 大于库，那么
+    // 这个库肯定是无法运行在所期望的 jvm 版本上的。
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
+
+// 需要加上这段代码，因为上面的属性只对 java 编译过程有效，对 kotlin 无效的。因此 kotlin 编译使用的 jdk 是
+// 当前 gradle 的 jdk，也就是 jdk17，所以 kotlin 的 target 也是 17，这和 java 的 target 不兼容，因此需要改写成 1.8。
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+// 其实把上面 compileKotlin 块去掉，加下面这段代码也行，这里是将所有的 kotlin 任务的 jvm 工具链都设为 jdk1.8，
+// 这导致所有 kotlin 任务的 target 默认就是 1.8。上面的代码块是单独指定 compileKotlin 这个任务的 target 为 1.8。
+//kotlin {
+//    jvmToolchain {
+//        languageVersion.set(JavaLanguageVersion.of(8))
+//    }
+//}
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

@@ -1,5 +1,6 @@
 package me.liwenkun.demo.customview;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,13 +8,19 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 
 import me.liwenkun.demo.R;
+import me.liwenkun.demo.demoframework.DemoBaseFragment;
 import me.liwenkun.demo.libannotation.Demo;
 
-@Demo(category = "/安卓/自定义View/", title = "Canvas Playground")
-public class CanvasPlaygroundFragment extends Fragment {
+@Demo(title = "Canvas Playground")
+public class CanvasPlaygroundFragment extends DemoBaseFragment {
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        getDemoFragmentActivity().setSourceCode(CanvasView.sourceCode);
+    }
 
     @Nullable
     @Override

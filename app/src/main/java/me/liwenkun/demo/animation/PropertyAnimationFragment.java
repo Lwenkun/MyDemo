@@ -15,7 +15,7 @@ import me.liwenkun.demo.demoframework.DemoBaseFragment;
 import me.liwenkun.demo.R;
 import me.liwenkun.demo.libannotation.Demo;
 
-@Demo(category = "/安卓/动画", title = "属性动画")
+@Demo(title = "属性动画")
 public class PropertyAnimationFragment extends DemoBaseFragment {
 
     Animator animator;

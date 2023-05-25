@@ -14,7 +14,7 @@ import me.liwenkun.demo.demoframework.DemoBaseFragment;
 import me.liwenkun.demo.R;
 import me.liwenkun.demo.libannotation.Demo;
 
-@Demo(category = "/安卓/动画/", title = "帧动画")
+@Demo(title = "帧动画" )
 public class AnimationDrawableFragment extends DemoBaseFragment {
     private ImageView frameAnimation;
     private ImageView frameAnimation1;

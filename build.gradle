@@ -1,14 +1,18 @@
+import java.lang.management.ManagementFactory
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    ext.kotlin_version = "1.4.21"
+    ext.kotlin_version = '1.8.21'
+    ext.room_version = "2.5.1"
+    ext.dagger_version = "2.46.1"
     repositories {
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/google' }
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.1'
+        classpath 'com.android.tools.build:gradle:8.0.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -21,10 +25,16 @@ allprojects {
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/google' }
         google()
-        jcenter()
+        mavenCentral()
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+def runtime = ManagementFactory.getRuntimeMXBean()
+def name = runtime.name
+def pid = name.substring(0, name.indexOf("@")).toLong()
+println("gradle 所在进程 Pid: $pid")
+println("gradle vm 版本: ${System.getProperty("java.version")}")

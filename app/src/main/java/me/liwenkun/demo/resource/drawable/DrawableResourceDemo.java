@@ -24,7 +24,7 @@ import me.liwenkun.demo.demoframework.DemoBaseFragment;
 import me.liwenkun.demo.R;
 import me.liwenkun.demo.libannotation.Demo;
 
-@Demo(category = "/安卓/资源/", title = "drawable")
+@Demo(title = "drawable")
 public class DrawableResourceDemo extends DemoBaseFragment {
 
     private int gravityIndex;

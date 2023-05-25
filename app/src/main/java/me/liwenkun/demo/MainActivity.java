@@ -1,5 +1,7 @@
 package me.liwenkun.demo;
 
+import static me.liwenkun.demo.demoframework.DemoBaseActivity.EXTRA_DEMO_TITLE;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,8 +24,6 @@ import java.util.List;
 
 import me.liwenkun.demo.demoframework.DemoBook;
 import me.liwenkun.demo.demoframework.DemoFragmentActivity;
-
-import static me.liwenkun.demo.demoframework.DemoBaseActivity.EXTRA_DEMO_TITLE;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mainActivityModel = new ViewModelProvider(this,
-                ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()))
+                (ViewModelProvider.Factory) ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()))
                 .get(MainActivityModel.class);
         RecyclerView rvDemoList = findViewById(R.id.demo_list);
         rvDemoList.setLayoutManager(new LinearLayoutManager(this,

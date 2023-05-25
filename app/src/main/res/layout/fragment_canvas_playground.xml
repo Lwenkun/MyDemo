@@ -2,15 +2,27 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:background="@android:color/holo_blue_bright"
     android:layout_width="match_parent"
-    android:layerType="software"
     android:layout_height="match_parent"
     tools:context=".customview.CanvasPlaygroundFragment">
 
-    <me.liwenkun.demo.customview.CanvasView
-        android:layerType="software"
-        android:id="@+id/canvas_view"
-        android:layout_width="match_parent"
-        android:layout_height="100dp" />
+    <me.liwenkun.demo.customview.MyFrameLayout
+        android:background="#fff"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="300dp"
+        android:layout_height="300dp">
+        <me.liwenkun.demo.customview.CanvasView
+            android:layout_gravity="center"
+            android:id="@+id/canvas_view"
+            android:layout_width="200dp"
+            android:layout_height="200dp" />
+    </me.liwenkun.demo.customview.MyFrameLayout>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

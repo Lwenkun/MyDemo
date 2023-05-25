@@ -13,12 +13,13 @@ import me.liwenkun.demo.R
 import me.liwenkun.demo.libannotation.Demo
 import me.liwenkun.demo.utils.Utils
 
-@Demo("/安卓/自定义View/", "自定义小组件集合")
+
+@Demo(title = "自定义小组件集合")
 class CustomViewFragment : DemoBaseFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.activity_custom_view, container, false)
-        return view;
+        return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -54,7 +55,6 @@ class CustomViewFragment : DemoBaseFragment() {
         ivOutline.outlineProvider = object : ViewOutlineProvider() {
             override fun getOutline(view: View?, outline: Outline?) {
                 if (view != null) {
-                    outline.also {  }
                     outline?.setRoundRect(0, 0, view.width, view.height, Utils.px(10).toFloat())
                 }
             }
@@ -70,5 +70,24 @@ class CustomViewFragment : DemoBaseFragment() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
             }
         })
+
+        val clipLayout: ClipLayout = view.findViewById(R.id.clip_layout)
+        val sbClip = view.findViewById<SeekBar>(R.id.sb_cilp)
+        sbClip.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                clipLayout.setClip(1 - progress.toFloat() / seekBar!!.max)
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+
+            }
+        })
+
     }
+
+
 }
