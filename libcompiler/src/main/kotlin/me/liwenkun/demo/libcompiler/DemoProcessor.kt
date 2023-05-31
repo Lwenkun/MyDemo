@@ -95,7 +95,7 @@ open class DemoProcessor : AbstractProcessor() {
         javaFile.writeTo(filer)
     }
 
-    override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.RELEASE_8
+    override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.latest()
 
     override fun getSupportedAnnotationTypes(): MutableSet<String> = mutableSetOf(Demo::class.java.name)
 }

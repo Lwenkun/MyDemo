@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
-    id 'kotlin'
-    id 'kotlin-kapt'
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.kapt)
 }
 
 // 当前 java 插件的 toolchain 继承自 gradle，为 jdk17，如果这里不指明 target，那么 target 默认就是 17，
@@ -28,7 +28,7 @@ kotlin {
     }
 }
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation libs.kotlin.stdlib
     implementation "com.google.auto.service:auto-service-annotations:1.0-rc6"
     kapt "com.google.auto.service:auto-service:1.0-rc6"
     implementation 'com.squareup:javapoet:1.13.0'

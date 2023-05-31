@@ -2,9 +2,9 @@
 // 为了解决这个问题，gradle 单独处理 plugins 中的代码，解析出插件，将插件作为脚本编译和运行的依赖，这样脚本就能正常
 // 编译运行了，因此我们在脚本中能正常使用脚本中定义类。
 plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
-    id 'kotlin-kapt'
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kapt)
 //    id 'me.liwenkun.custom-plugin'
 }
 
@@ -154,24 +154,28 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation "androidx.room:room-runtime:$room_version"
-    // 对 kotlin 源码使用注解处理器时，需要用 kapt 替换 annotationProcessor,
-    // kapt 内部使用了 javac 来运行注解处理器
-    kapt "androidx.room:room-compiler:$room_version"
+    implementation libs.kotlin.stdlib
+
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation project(path: ':libannotation')
     implementation 'thereisnospon.codeview:codeview:0.3.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    kapt project(path: ':libcompiler')
 
-    implementation "com.google.dagger:dagger:$dagger_version"
-    kapt "com.google.dagger:dagger-compiler:$dagger_version"
+    kapt project(path: ':libcompiler')
+    implementation project(path: ':libannotation')
+
+    implementation libs.retrofit
+    implementation libs.retrofit.converter
+
+    implementation libs.dagger
+    // 对 kotlin 源码使用注解处理器时，需要用 kapt 替换 annotationProcessor,
+    // kapt 内部使用了 javac 来运行注解处理器
+    kapt libs.dagger.compiler
+
+    implementation libs.room.runtime
+    kapt libs.room.compiler
 }
 
 // 这种定义任务的 dsl 不符合 groovy 的语法, 是 Gradle 定制的 dsl，

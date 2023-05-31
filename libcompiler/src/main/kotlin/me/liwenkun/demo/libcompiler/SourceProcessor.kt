@@ -17,7 +17,6 @@ import javax.tools.*
 
 
 @AutoService(Processor::class)
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedAnnotationTypes("me.liwenkun.demo.libannotation.Source")
 class SourceProcessor : AbstractProcessor() {
 
@@ -110,5 +109,9 @@ class SourceProcessor : AbstractProcessor() {
             dummyFile.parentFile.parentFile.parentFile.parentFile
                 .parentFile.parentFile
         return File(projectRoot.absolutePath.toString() + "/src/main/java")
+    }
+
+    override fun getSupportedSourceVersion(): SourceVersion {
+        return SourceVersion.latest()
     }
 }

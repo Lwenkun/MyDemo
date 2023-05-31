@@ -1,32 +1,12 @@
 import java.lang.management.ManagementFactory
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-buildscript {
-    ext.kotlin_version = '1.8.21'
-    ext.room_version = "2.5.1"
-    ext.dagger_version = "2.46.1"
-    repositories {
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.0.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
-
-allprojects {
-    repositories {
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        google()
-        mavenCentral()
-    }
+// 已经使用了 alias，就没必要在根项目中使用 plugins 块了，根项目 plugins 块本意是为了保持版本一致
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin) apply false
+    alias(libs.plugins.kapt) apply false
 }
 
 task clean(type: Delete) {
