@@ -2,7 +2,11 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/open_log"
-        android:title="@string/open_log"
+        android:id="@+id/menu_demo_open_log"
+        android:title="@string/open_log_view"
+        app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/menu_demo_star"
+        android:title="@string/star"
         app:showAsAction="ifRoom" />
 </menu>

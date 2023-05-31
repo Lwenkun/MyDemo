@@ -1,137 +1,167 @@
-package me.liwenkun.demo.demoframework;
+package me.liwenkun.demo.demoframework
 
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import android.app.Activity
+import android.content.Intent
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
+import me.liwenkun.demo.App.Companion.get
+import me.liwenkun.demo.R
+import me.liwenkun.demo.demoframework.DemoBook.DemoItem
+import thereisnospon.codeview.CodeView
+import thereisnospon.codeview.CodeViewTheme
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+open class DemoBaseActivity : AppCompatActivity(), Logger {
+    private lateinit var logView: LogView
+    private lateinit var contentView: ViewGroup
+    private lateinit var codeView: CodeView
+    private val demoItemDao = get().appDatabase.demoItemDao()
+    private lateinit var demoId: String
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+    private interface MenuItemState {
+        fun onClick(menuItem: MenuItem)
+    }
 
-import me.liwenkun.demo.R;
-import thereisnospon.codeview.CodeView;
-import thereisnospon.codeview.CodeViewTheme;
-
-public class DemoBaseActivity extends AppCompatActivity implements Logger {
-    private static final int MENU_ID_OPEN_LOG = View.generateViewId();
-
-    public static final String EXTRA_DEMO_TITLE = "demo_title";
-
-    private LogView logView;
-
-    private ViewGroup contentView;
-    private CodeView codeView;
-
-    private String openLogText;
-    private String closeLogText;
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        String demoTitle = getIntent().getStringExtra(EXTRA_DEMO_TITLE);
-        setTitle(demoTitle);
-        super.setContentView(R.layout.activity_demo_base_activity);
-        contentView = findViewById(R.id.content);
-        initCodeView();
-        logView = findViewById(R.id.log_view);
+    private val closeState: MenuItemState = object : MenuItemState {
+        override fun onClick(menuItem: MenuItem) {
+            logView.visibility = View.VISIBLE
+            menuItem.setTitle(R.string.open_log_view)
+            currentLogState = openState
+        }
+    }
+    private val openState: MenuItemState = object : MenuItemState {
+        override fun onClick(menuItem: MenuItem) {
+            logView.visibility = View.INVISIBLE
+            menuItem.setTitle(R.string.close_log_view)
+            currentLogState = closeState
+        }
+    }
+    private val starState: MenuItemState = object : MenuItemState {
+        override fun onClick(menuItem: MenuItem) {
+            menuItem.isEnabled = false
+            Thread {
+                demoItemDao.star(demoId, false)
+                runOnUiThread { menuItem.isEnabled = true }
+            }.start()
+        }
+    }
+    private val unStarState: MenuItemState = object : MenuItemState {
+        override fun onClick(menuItem: MenuItem) {
+            menuItem.isEnabled = false
+            Thread {
+                demoItemDao.star(demoId, true)
+                runOnUiThread { menuItem.isEnabled = true }
+            }.start()
+        }
+    }
+    private var currentLogState = closeState
+    private var currentStarState = unStarState
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        super.setContentView(R.layout.activity_demo_base_activity)
+        demoId = intent.getStringExtra(EXTRA_DEMO_ID).toString()
+        contentView = findViewById(R.id.content)
+        initCodeView()
+        logView = findViewById(R.id.log_view)
         if (showLogOnStart()) {
-            logView.setVisibility(View.VISIBLE);
+            logView.visibility = View.VISIBLE
         }
-        openLogText = getString(R.string.open_log);
-        closeLogText = getString(R.string.close_log);
+        demoItemDao.get(demoId).observe(this) { demoItem: DemoItem -> title = demoItem.name }
     }
 
-    protected boolean showLogOnStart() {
-        return false;
+    protected open fun showLogOnStart(): Boolean {
+        return false
     }
 
-    private void initCodeView() {
-        codeView = findViewById(R.id.code_view);
-        codeView.setTheme(CodeViewTheme.ATELIER_FOREST_DARK).fillColor();
-        codeView.setEncode("utf-8");
+    private fun initCodeView() {
+        codeView = findViewById<CodeView>(R.id.code_view)
+            .setTheme(CodeViewTheme.ATELIER_FOREST_DARK)
+            .fillColor()
+            .setEncode("utf-8")
     }
 
-    public void setSourceCode(String sourceCode) {
-        codeView.showCode(sourceCode);
-        codeView.setVisibility(View.VISIBLE);
+    fun setSourceCode(sourceCode: String?) {
+        codeView.showCode(sourceCode)
+        codeView.visibility = View.VISIBLE
     }
 
-    @Override
-    public void setContentView(View view) {
-        setContentView(view, new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
+    override fun setContentView(view: View) {
+        setContentView(
+            view,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
     }
 
-    @Override
-    public void setContentView(View view, ViewGroup.LayoutParams params) {
-        contentView.removeAllViews();
-        contentView.addView(view, params);
+    override fun setContentView(view: View, params: ViewGroup.LayoutParams) {
+        contentView.removeAllViews()
+        contentView.addView(view, params)
     }
 
-    @Override
-    public void setContentView(int layoutResID) {
-        contentView.removeAllViews();
-        LayoutInflater.from(this).inflate(layoutResID, contentView, true);
+    override fun setContentView(layoutResID: Int) {
+        contentView.removeAllViews()
+        LayoutInflater.from(this).inflate(layoutResID, contentView, true)
     }
 
-    @Override
-    public void addContentView(View view, ViewGroup.LayoutParams params) {
-        contentView.addView(view, params);
+    override fun addContentView(view: View, params: ViewGroup.LayoutParams) {
+        contentView.addView(view, params)
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuItem openLogView = menu.add(View.generateViewId(), MENU_ID_OPEN_LOG, Menu.NONE,
-                logView.getVisibility() == View.VISIBLE ? closeLogText : openLogText);
-        openLogView.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == MENU_ID_OPEN_LOG) {
-            if (logView.getVisibility() == View.VISIBLE) {
-                logView.setVisibility(View.GONE);
-                item.setTitle("打开日志");
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_demo, menu)
+        val menuItem = menu.findItem(R.id.menu_demo_star)
+        demoItemDao.get(demoId).observe(this) { demoItem: DemoItem ->
+            if (demoItem.isStarred) {
+                menuItem.setTitle(R.string.has_star)
+                menuItem.isEnabled = true
+                currentStarState = starState
             } else {
-                logView.setVisibility(View.VISIBLE);
-                item.setTitle("关闭日志");
+                menuItem.setTitle(R.string.star)
+                menuItem.isEnabled = true
+                currentStarState = unStarState
             }
-            return true;
-        } else {
-            return super.onOptionsItemSelected(item);
         }
+        return true
     }
 
-    protected void logInfo(String msg) {
-        log(msg, Logger.COLOR_INFO);
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.menu_demo_open_log) {
+            currentLogState.onClick(item)
+            return true
+        } else if (item.itemId == R.id.menu_demo_star) {
+            currentStarState.onClick(item)
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
-    protected void logError(String msg) {
-        log(msg, Logger.COLOR_ERROR);
+    override fun deleteAllLogs() {
+        logView.deleteAllLogs()
     }
 
-    @Override
-    public void deleteAllLogs() {
-        logView.deleteAllLogs();
+    override fun log(tag: String?, message: String?, color: Int, promptChar: String?) {
+        logView.print(tag, message, color, promptChar)
     }
 
-    @Override
-    public void log(String message, int color) {
-        log(message, color, "");
-    }
+    companion object {
+        const val EXTRA_DEMO_ID = "demo_item"
+        @JvmStatic
+        fun getRequiredExtras(demoId: String?): Bundle {
+            val bundle = Bundle()
+            bundle.putString(EXTRA_DEMO_ID, demoId)
+            return bundle
+        }
 
-    @Override
-    public void log(String message, int color, String promptChar) {
-        log("", message, color, promptChar);
-    }
-
-    @Override
-    public void log(String tag, String message, int color, String promptChar) {
-        logView.print(tag, message, color, promptChar);
+        fun show(context: Activity, demoItem: DemoItem) {
+            val showDemo = Intent(context, demoItem.demoPage)
+            showDemo.putExtras(getRequiredExtras(demoItem.path))
+            context.startActivity(showDemo)
+        }
     }
 }

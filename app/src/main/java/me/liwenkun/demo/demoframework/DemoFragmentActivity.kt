@@ -1,24 +1,31 @@
-package me.liwenkun.demo.demoframework;
+package me.liwenkun.demo.demoframework
 
-import android.os.Bundle;
+import android.app.Activity
+import android.content.Intent
+import android.os.Bundle
+import me.liwenkun.demo.R
+import me.liwenkun.demo.demoframework.DemoBook.DemoItem
 
-import androidx.annotation.Nullable;
+class DemoFragmentActivity : DemoBaseActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_demo)
+        val fragmentName = intent.getStringExtra(EXTRA_FRAGMENT_NAME)
+        supportFragmentManager.beginTransaction().add(
+            R.id.fragment_container, supportFragmentManager
+                .fragmentFactory.instantiate(classLoader, fragmentName!!), "demo-fragment"
+        )
+            .commitNow()
+    }
 
-import me.liwenkun.demo.R;
-
-public class DemoFragmentActivity extends DemoBaseActivity {
-
-    public static final String EXTRA_FRAGMENT_NAME = "fragment_name";
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_demo);
-
-        String fragmentName = getIntent().getStringExtra(EXTRA_FRAGMENT_NAME);
-
-        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, getSupportFragmentManager()
-                .getFragmentFactory().instantiate(getClassLoader(), fragmentName), "demo-fragment")
-                .commitNow();
+    companion object {
+        const val EXTRA_FRAGMENT_NAME = "fragment_name"
+        fun show(context: Activity, item: DemoItem) {
+            Intent(context, DemoFragmentActivity::class.java).let {
+                it.putExtra(EXTRA_FRAGMENT_NAME, item.demoPage!!.name)
+                it.putExtras(getRequiredExtras(item.path))
+                context.startActivity(it)
+            }
+        }
     }
 }

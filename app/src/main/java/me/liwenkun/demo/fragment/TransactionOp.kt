@@ -1,81 +1,90 @@
-package me.liwenkun.demo.fragment;
+package me.liwenkun.demo.fragment
 
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
+import me.liwenkun.demo.R
+import me.liwenkun.demo.fragment.TestFragment.Companion.newInstance
 
-import me.liwenkun.demo.R;
+enum class TransactionOp {
 
-public enum TransactionOp {
-    ADD("Add") {
-        @Override
-        public TransactionOpAction generateTransactionOp(FragmentManager fragmentManager, FragmentTransaction fragmentTransaction, String tag) {
-            return new TransactionOpAction(this, tag) {
-                @Override
-                public void run() {
-                    fragmentTransaction.add(R.id.fragment_container, TestFragment.newInstance(), tag);
+    ADD {
+        override fun generateTransactionOp(
+            fragmentManager: FragmentManager,
+            fragmentTransaction: FragmentTransaction,
+            tag: String
+        ): TransactionOpAction {
+            return object : TransactionOpAction(this, tag) {
+                override fun run() {
+                    fragmentTransaction.add(R.id.fragment_container, newInstance(), tag)
                 }
-            };
+            }
         }
     },
-    REMOVE("Remove") {
-        @Override
-        public TransactionOpAction generateTransactionOp(FragmentManager fragmentManager, FragmentTransaction fragmentTransaction, String tag) {
-            return new TransactionOpAction(this, tag) {
-                @Override
-                public void run() {
-                    Fragment fragment = fragmentManager.findFragmentByTag(tag);
+    REMOVE {
+        override fun generateTransactionOp(
+            fragmentManager: FragmentManager,
+            fragmentTransaction: FragmentTransaction,
+            tag: String
+        ): TransactionOpAction {
+            return object : TransactionOpAction(this, tag) {
+                override fun run() {
+                    val fragment = fragmentManager.findFragmentByTag(tag)
                     if (fragment != null) {
-                        fragmentTransaction.remove(fragment);
+                        fragmentTransaction.remove(fragment)
                     }
                 }
-            };
+            }
         }
     },
-    ATTACH("Attach") {
-        @Override
-        public TransactionOpAction generateTransactionOp(FragmentManager fragmentManager, FragmentTransaction fragmentTransaction, String tag) {
-            return new TransactionOpAction(this, tag) {
-                @Override
-                public void run() {
-                    Fragment fragment = fragmentManager.findFragmentByTag(tag);
+    ATTACH {
+        override fun generateTransactionOp(
+            fragmentManager: FragmentManager,
+            fragmentTransaction: FragmentTransaction,
+            tag: String
+        ): TransactionOpAction {
+            return object : TransactionOpAction(this, tag) {
+                override fun run() {
+                    val fragment = fragmentManager.findFragmentByTag(tag)
                     if (fragment != null) {
-                        fragmentTransaction.attach(fragment);
+                        fragmentTransaction.attach(fragment)
                     }
                 }
-            };
+            }
         }
     },
-    DETACH("Detach") {
-        @Override
-        public TransactionOpAction generateTransactionOp(FragmentManager fragmentManager, FragmentTransaction fragmentTransaction, String tag) {
-            return new TransactionOpAction(this, tag) {
-                @Override
-                public void run() {
-                    Fragment fragment = fragmentManager.findFragmentByTag(tag);
+    DETACH {
+        override fun generateTransactionOp(
+            fragmentManager: FragmentManager,
+            fragmentTransaction: FragmentTransaction,
+            tag: String
+        ): TransactionOpAction {
+            return object : TransactionOpAction(this, tag) {
+                override fun run() {
+                    val fragment = fragmentManager.findFragmentByTag(tag)
                     if (fragment != null) {
-                        fragmentTransaction.detach(fragment);
+                        fragmentTransaction.detach(fragment)
                     }
                 }
-            };
+            }
         }
     },
-    REPLACE("Replace") {
-        public TransactionOpAction generateTransactionOp(FragmentManager fragmentManager, FragmentTransaction fragmentTransaction, String tag) {
-            return new TransactionOpAction(this, tag) {
-                @Override
-                public void run() {
-                    fragmentTransaction.replace(R.id.fragment_container, TestFragment.newInstance(), tag);
+    REPLACE {
+        override fun generateTransactionOp(
+            fragmentManager: FragmentManager,
+            fragmentTransaction: FragmentTransaction,
+            tag: String
+        ): TransactionOpAction {
+            return object : TransactionOpAction(this, tag) {
+                override fun run() {
+                    fragmentTransaction.replace(R.id.fragment_container, newInstance(), tag)
                 }
-            };
+            }
         }
     };
 
-    String name;
-
-    TransactionOp(String name) {
-        this.name = name;
-    }
-
-    public abstract TransactionOpAction generateTransactionOp(FragmentManager fragmentManager, FragmentTransaction fragmentTransaction, String tag);
+    abstract fun generateTransactionOp(
+        fragmentManager: FragmentManager,
+        fragmentTransaction: FragmentTransaction,
+        tag: String
+    ): TransactionOpAction
 }

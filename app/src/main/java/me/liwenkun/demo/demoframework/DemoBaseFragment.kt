@@ -1,59 +1,24 @@
-package me.liwenkun.demo.demoframework;
+package me.liwenkun.demo.demoframework
 
-import android.content.Context;
+import android.content.Context
+import androidx.fragment.app.Fragment
+import me.liwenkun.demo.demoframework.Logger.Companion.from
 
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-
-public class DemoBaseFragment extends Fragment implements Logger {
-
-    private Logger logger;
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof Logger) {
-            logger = ((Logger) context);
-        }
+open class DemoBaseFragment : Fragment(), Logger {
+    private lateinit var logger: Logger
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        logger = from(context)
     }
 
-    protected void logInfo(String msg) {
-        log(msg, Logger.COLOR_INFO);
+    override fun deleteAllLogs() {
+        logger.deleteAllLogs()
     }
 
-    protected void logError(String msg) {
-        log(msg, Logger.COLOR_ERROR);
-    }
+    val demoFragmentActivity: DemoFragmentActivity
+        get() = requireActivity() as DemoFragmentActivity
 
-    @Override
-    public void log(String message, int color) {
-        if (logger != null) {
-            logger.log(message, color);
-        }
-    }
-
-    @Override
-    public void log(String message, int color, String promptChar) {
-        if (logger != null) {
-            logger.log(message, color, promptChar);
-        }
-    }
-
-    @Override
-    public void deleteAllLogs() {
-        if (logger != null) {
-            logger.deleteAllLogs();
-        }
-    }
-
-    public DemoFragmentActivity getDemoFragmentActivity() {
-        return ((DemoFragmentActivity) getActivity());
-    }
-
-    @Override
-    public void log(String tag, String message, int color, String promptChar) {
-        if (logger != null) {
-            logger.log(tag, message, color, promptChar);
-        }
+    override fun log(tag: String?, message: String?, color: Int, promptChar: String?) {
+        logger.log(tag, message, color, promptChar)
     }
 }

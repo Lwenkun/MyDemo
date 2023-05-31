@@ -1,200 +1,206 @@
-package me.liwenkun.demo.fragment;
+package me.liwenkun.demo.fragment
 
-import android.graphics.Color;
-import android.os.Bundle;
-import android.os.Handler;
-import android.view.ViewGroup;
-import android.view.ViewGroup.MarginLayoutParams;
-import android.widget.CheckBox;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatTextView;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.RecyclerView.Adapter;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.List;
-
-import me.liwenkun.demo.R;
-import me.liwenkun.demo.demoframework.DemoBaseActivity;
-import me.liwenkun.demo.demoframework.Logger;
-import me.liwenkun.demo.libannotation.Demo;
-import me.liwenkun.demo.utils.Utils;
+import android.graphics.Color
+import android.os.Bundle
+import android.os.Handler
+import android.view.View
+import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
+import android.widget.CheckBox
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.widget.AppCompatTextView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import me.liwenkun.demo.R
+import me.liwenkun.demo.demoframework.DemoBaseActivity
+import me.liwenkun.demo.libannotation.Demo
+import me.liwenkun.demo.utils.DimensionUtils.px
+import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.Method
 
 @Demo(title = "Fragment 事务和生命周期的关系")
-public class FragmentActivity extends DemoBaseActivity {
+class FragmentActivity : DemoBaseActivity() {
 
-    private static final Method GET_ACTIVE_FRAGMENT = getActiveFragmentMethod();
-    private static final String[] TAGS = new String[]{"A", "B", "C", "D", "E", "F"};
+    private var currentSelectedOp: TransactionOp? = null
+    private val transactionHelper = TransactionHelper(supportFragmentManager)
 
-    private TransactionOp currentSelectedOp;
-    private final TransactionHelper transactionHelper
-            = new TransactionHelper(getSupportFragmentManager());
-
-    private final Adapter<RecyclerView.ViewHolder> optionsAdapter = new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-        @NonNull
-        @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            AppCompatTextView textView = new AppCompatTextView(FragmentActivity.this);
-            textView.setPadding(Utils.px(10), Utils.px(10), Utils.px(10), Utils.px(10));
-            return new RecyclerView.ViewHolder(textView) {
-            };
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            ((TextView) holder.itemView).setText(TransactionOp.values()[position].name);
-            holder.itemView.setOnClickListener(v -> {
-                currentSelectedOp = TransactionOp.values()[position];
-                notifyDataSetChanged();
-            });
-            if (currentSelectedOp == TransactionOp.values()[position]) {
-                holder.itemView.setBackgroundColor(Color.RED);
-            } else {
-                holder.itemView.setBackgroundColor(0xff999999);
+    private val optionsAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder> =
+        object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+            override fun onCreateViewHolder(
+                parent: ViewGroup,
+                viewType: Int
+            ): RecyclerView.ViewHolder {
+                val textView = AppCompatTextView(this@FragmentActivity)
+                textView.setPadding(px(10), px(10), px(10), px(10))
+                return object : RecyclerView.ViewHolder(textView) {}
             }
-        }
 
-        @Override
-        public int getItemCount() {
-            return TransactionOp.values().length;
-        }
-    };
-
-    private final Adapter<RecyclerView.ViewHolder> tagsAdapter
-            = new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-        @NonNull
-        @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            AppCompatTextView textView = new AppCompatTextView(FragmentActivity.this);
-            textView.setBackgroundColor(0xffeeeeee);
-            MarginLayoutParams layoutParams
-                    = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            layoutParams.rightMargin = Utils.px(5);
-            textView.setLayoutParams(layoutParams);
-            textView.setPadding(Utils.px(10), Utils.px(10), Utils.px(10), Utils.px(10));
-            return new RecyclerView.ViewHolder(textView) {
-            };
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            ((TextView) holder.itemView).setText(TAGS[position]);
-            holder.itemView.setOnClickListener(v -> {
-                if (currentSelectedOp != null) {
-                    transactionHelper.addTransactionOp(currentSelectedOp, TAGS[position]);
-                    currentSelectedOp = null;
-                    optionsAdapter.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(FragmentActivity.this, "請先選擇操作", Toast.LENGTH_SHORT).show();
+            override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+                (holder.itemView as TextView).text = TransactionOp.values()[position].name
+                holder.itemView.setOnClickListener { v: View? ->
+                    currentSelectedOp = TransactionOp.values()[position]
+                    notifyDataSetChanged()
                 }
-            });
-        }
+                if (currentSelectedOp === TransactionOp.values()[position]) {
+                    holder.itemView.setBackgroundColor(Color.RED)
+                } else {
+                    holder.itemView.setBackgroundColor(-0x666667)
+                }
+            }
 
-        @Override
-        public int getItemCount() {
-            return TAGS.length;
-        }
-    };
-
-    private final Adapter<RecyclerView.ViewHolder> opsAdapter
-            = new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-        @NonNull
-        @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            AppCompatTextView textView = new AppCompatTextView(FragmentActivity.this);
-            textView.setBackgroundColor(0xffffff00);
-            MarginLayoutParams layoutParams
-                    = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            layoutParams.rightMargin = Utils.px(5);
-            textView.setLayoutParams(layoutParams);
-            textView.setPadding(Utils.px(10), Utils.px(10), Utils.px(10), Utils.px(10));
-            return new RecyclerView.ViewHolder(textView) {
-            };
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            List<TransactionOpAction> transactionOpActions = transactionHelper.getTransactionOp().getValue();
-            if (transactionOpActions != null) {
-                ((TextView) holder.itemView).setText(transactionOpActions.get(position).getActionDesc());
+            override fun getItemCount(): Int {
+                return TransactionOp.values().size
             }
         }
 
-        @Override
-        public int getItemCount() {
-            List<TransactionOpAction> transactionOpActions = transactionHelper.getTransactionOp().getValue();
-            return transactionOpActions == null ? 0 : transactionOpActions.size();
-        }
-    };
+    private val tagsAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder> =
+        object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+            override fun onCreateViewHolder(
+                parent: ViewGroup,
+                viewType: Int
+            ): RecyclerView.ViewHolder {
+                val textView = AppCompatTextView(this@FragmentActivity)
+                textView.setBackgroundColor(-0x111112)
+                val layoutParams = MarginLayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                layoutParams.rightMargin = px(5)
+                textView.layoutParams = layoutParams
+                textView.setPadding(px(10), px(10), px(10), px(10))
+                return object : RecyclerView.ViewHolder(textView) {}
+            }
 
-    private static Method getActiveFragmentMethod() {
-        try {
-            Class<?> fragmentManagerImpl = Class.forName("androidx.fragment.app.FragmentManager");
-            Method method = fragmentManagerImpl.getDeclaredMethod("getActiveFragments");
-            method.setAccessible(true);
-            return method;
-        } catch (NoSuchMethodException | ClassNotFoundException e) {
-            return null;
-        }
-    }
+            override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+                (holder.itemView as TextView).text = TAGS[position]
+                holder.itemView.setOnClickListener { v: View? ->
+                    if (currentSelectedOp != null) {
+                        transactionHelper.addTransactionOp(currentSelectedOp!!, TAGS[position])
+                        currentSelectedOp = null
+                        optionsAdapter.notifyDataSetChanged()
+                    } else {
+                        Toast.makeText(this@FragmentActivity, "請先選擇操作", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }
+            }
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fragment);
-        RecyclerView opOptions = findViewById(R.id.rv_options);
-        opOptions.setAdapter(optionsAdapter);
-        opOptions.setLayoutManager(new LinearLayoutManager(FragmentActivity.this, LinearLayoutManager.HORIZONTAL, false));
-        RecyclerView tags = findViewById(R.id.rv_tags);
-        tags.setAdapter(tagsAdapter);
-        tags.setLayoutManager(new LinearLayoutManager(FragmentActivity.this, LinearLayoutManager.HORIZONTAL, false));
-        RecyclerView ops = findViewById(R.id.rv_ops);
-        ops.setAdapter(opsAdapter);
-        ops.setLayoutManager(new LinearLayoutManager(FragmentActivity.this, LinearLayoutManager.HORIZONTAL, false));
-        transactionHelper.getTransactionOp().observe(this, TransactionOpActions -> opsAdapter.notifyDataSetChanged());
-        CheckBox cbAddToBackStack = findViewById(R.id.cb_add_to_backstack);
-        findViewById(R.id.btn_commit).setOnClickListener(v -> {
-            if (transactionHelper.commit(cbAddToBackStack.isChecked())) {
-                v.post(this::logFragmentInfo);
+            override fun getItemCount(): Int {
+                return TAGS.size
+            }
+        }
+
+
+    private val opsAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder> =
+        object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+            override fun onCreateViewHolder(
+                parent: ViewGroup,
+                viewType: Int
+            ): RecyclerView.ViewHolder {
+                val textView = AppCompatTextView(this@FragmentActivity)
+                textView.setBackgroundColor(-0x100)
+                val layoutParams = MarginLayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                layoutParams.rightMargin = px(5)
+                textView.layoutParams = layoutParams
+                textView.setPadding(px(10), px(10), px(10), px(10))
+                return object : RecyclerView.ViewHolder(textView) {}
+            }
+
+            override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+                val transactionOpActions = transactionHelper.transactionOp.value
+                if (transactionOpActions != null) {
+                    (holder.itemView as TextView).text =
+                        transactionOpActions[position].actionDesc
+                }
+            }
+
+            override fun getItemCount(): Int {
+                val transactionOpActions = transactionHelper.transactionOp.value
+                return transactionOpActions?.size ?: 0
+            }
+        }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_fragment)
+
+        val opOptions = findViewById<RecyclerView>(R.id.rv_options)
+        opOptions.adapter = optionsAdapter
+        opOptions.layoutManager =
+            LinearLayoutManager(this@FragmentActivity, LinearLayoutManager.HORIZONTAL, false)
+
+        val tags = findViewById<RecyclerView>(R.id.rv_tags)
+        tags.adapter = tagsAdapter
+        tags.layoutManager =
+            LinearLayoutManager(this@FragmentActivity, LinearLayoutManager.HORIZONTAL, false)
+
+        val ops = findViewById<RecyclerView>(R.id.rv_ops)
+        ops.adapter = opsAdapter
+        ops.layoutManager =
+            LinearLayoutManager(this@FragmentActivity, LinearLayoutManager.HORIZONTAL, false)
+
+        transactionHelper.transactionOp.observe(this) { opsAdapter.notifyDataSetChanged() }
+
+        val cbAddToBackStack = findViewById<CheckBox>(R.id.cb_add_to_backstack)
+        findViewById<View>(R.id.btn_commit).setOnClickListener { v: View ->
+            if (transactionHelper.size() > 0) {
+                transactionHelper.commit(cbAddToBackStack.isChecked)
+                Handler(mainLooper).post { logFragmentInfo() }
             } else {
-                Toast.makeText(FragmentActivity.this, "操作隊列為空", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this@FragmentActivity, "操作隊列為空", Toast.LENGTH_SHORT).show()
             }
-        });
-        findViewById(R.id.btn_clear_op).setOnClickListener(v -> transactionHelper.cleanTransactionOp());
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (getSupportFragmentManager().getBackStackEntryCount() != 0) {
-            new Handler().post(this::logFragmentInfo);
         }
-        super.onBackPressed();
+        findViewById<View>(R.id.btn_clear_op).setOnClickListener { transactionHelper.cleanTransactionOp() }
     }
 
-    private void logFragmentInfo() {
+    private fun logFragmentInfo() {
         if (GET_ACTIVE_FRAGMENT != null) {
             try {
                 // noinspection unchecked
-                List<Fragment> active = (List<Fragment>) GET_ACTIVE_FRAGMENT.invoke(getSupportFragmentManager());
-                if (active != null) {
-                    log("fragmentInfo->active: " + "{count: " + active.size()
-                            + ", fragments: " + active + "}", Logger.COLOR_INFO);
-                }
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
+                val active = GET_ACTIVE_FRAGMENT.invoke(
+                    supportFragmentManager
+                ) as List<*>
+                logInfo(
+                    "fragmentInfo->active: " + "{count: " + active.size
+                            + ", fragments: " + active + "}"
+                )
+            } catch (e: IllegalAccessException) {
+                e.printStackTrace()
+            } catch (e: InvocationTargetException) {
+                e.printStackTrace()
             }
         }
+        val added = supportFragmentManager.fragments
+        logInfo(
+            "fragmentInfo->added: " + "{count: " + added.size
+                    + ", fragments: " + added + "}"
+        )
+    }
 
-        List<Fragment> added = getSupportFragmentManager().getFragments();
-        log("fragmentInfo->added: " + "{count: " + added.size()
-                + ", fragments: " + added + "}", Logger.COLOR_INFO);
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            Handler(mainLooper).post { logFragmentInfo() }
+        }
+        super.onBackPressed()
+    }
+
+    companion object {
+        private val GET_ACTIVE_FRAGMENT = activeFragmentMethod
+        private val TAGS = arrayOf("A", "B", "C", "D", "E", "F")
+        private val activeFragmentMethod: Method?
+            get() = try {
+                val fragmentManagerImpl = Class.forName("androidx.fragment.app.FragmentManager")
+                val method = fragmentManagerImpl.getDeclaredMethod("getActiveFragments")
+                method.isAccessible = true
+                method
+            } catch (e: NoSuchMethodException) {
+                null
+            } catch (e: ClassNotFoundException) {
+                null
+            }
     }
 }

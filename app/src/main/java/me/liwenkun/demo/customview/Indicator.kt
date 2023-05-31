@@ -1,164 +1,142 @@
-package me.liwenkun.demo.customview;
+package me.liwenkun.demo.customview
 
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.util.AttributeSet;
-import android.view.View;
+import android.annotation.SuppressLint
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.util.AttributeSet
+import android.view.View
+import androidx.viewpager.widget.PagerAdapter
+import androidx.viewpager.widget.ViewPager
+import androidx.viewpager.widget.ViewPager.SimpleOnPageChangeListener
+import me.liwenkun.demo.R
+import kotlin.math.abs
 
-import androidx.annotation.Nullable;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
+class Indicator @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
+    private var index = 0
+    private var offset = 0f
+    private var requiredWidth = 0
+    private val radius: Int
+    private val margin: Int
+    private var focusLength: Int
+    private val focusedPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val unFocusedPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var num = 0
 
-import me.liwenkun.demo.R;
-
-public class Indicator extends View {
-
-    private int index;
-    private float offset;
-    private int requiredWidth;
-
-    private final int radius;
-    private final int margin;
-    private int focusLength;
-
-    private static final int DEF_RADIUS = 5;
-    private static final int DEF_MARGIN = 15;
-    private static final int DEF_FOCUS_LENGTH = 70;
-    private static final int DEF_FOCUSED_DOT_COLOR = Color.GRAY;
-    private static final int DEF_UNFOCUSED_DOT_COLOR = Color.LTGRAY;
-
-    private final Paint focusedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint unFocusedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-    private int num;
-
-    public Indicator(Context context) {
-        this(context, null);
+    init {
+        val typedArray =
+            context.obtainStyledAttributes(attrs, R.styleable.Indicator, defStyleAttr, 0)
+        radius = typedArray.getDimensionPixelSize(R.styleable.Indicator_dotRadius, DEF_RADIUS)
+        margin = typedArray.getDimensionPixelSize(R.styleable.Indicator_dotMargin, DEF_MARGIN)
+        focusLength = typedArray.getDimensionPixelSize(
+            R.styleable.Indicator_focusedDotLength,
+            DEF_FOCUS_LENGTH
+        )
+        focusLength = (radius * 2).coerceAtLeast(focusLength)
+        val focusedDotColor =
+            typedArray.getColor(R.styleable.Indicator_focusedDotColor, DEF_FOCUSED_DOT_COLOR)
+        val unfocusedDotColor =
+            typedArray.getColor(R.styleable.Indicator_unfocusedDotColor, DEF_UNFOCUSED_DOT_COLOR)
+        focusedPaint.color = focusedDotColor
+        focusedPaint.style = Paint.Style.FILL_AND_STROKE
+        unFocusedPaint.color = unfocusedDotColor
+        unFocusedPaint.style = Paint.Style.FILL_AND_STROKE
+        typedArray.recycle()
     }
 
-    public Indicator(Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public Indicator(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.Indicator, defStyleAttr, 0);
-        radius = typedArray.getDimensionPixelSize(R.styleable.Indicator_dotRadius, DEF_RADIUS);
-        margin = typedArray.getDimensionPixelSize(R.styleable.Indicator_dotMargin, DEF_MARGIN);
-        focusLength = typedArray.getDimensionPixelSize(R.styleable.Indicator_focusedDotLength, DEF_FOCUS_LENGTH);
-        focusLength = Math.max(radius * 2, focusLength);
-
-        int focusedDotColor = typedArray.getColor(R.styleable.Indicator_focusedDotColor, DEF_FOCUSED_DOT_COLOR);
-        int unfocusedDotColor = typedArray.getColor(R.styleable.Indicator_unfocusedDotColor, DEF_UNFOCUSED_DOT_COLOR);
-
-        focusedPaint.setColor(focusedDotColor);
-        focusedPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        unFocusedPaint.setColor(unfocusedDotColor);
-        unFocusedPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-
-        typedArray.recycle();
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
+    override fun onDraw(canvas: Canvas) {
 
         // 焦点指示器超出的长度
-        int deltaLength = focusLength - radius * 2;
-
-        int startX = (getWidth() - requiredWidth) / 2;
-
-        for (int i = 0; i < num; i++) {
-
-            boolean focus = false;
-            float l, t, r, b;
-            int straightLength = 0;
-
+        val deltaLength = focusLength - radius * 2
+        var startX = (width - requiredWidth) / 2
+        for (i in 0 until num) {
+            var focus = false
+            var straightLength = 0
             if (i == index) {
-                straightLength = (int) (deltaLength * (1 - offset));
-                focus = Math.abs(offset) < 0.5;
+                straightLength = (deltaLength * (1 - offset)).toInt()
+                focus = abs(offset) < 0.5
             }
-
-            if (i == index +1) {
-                straightLength = (int) (deltaLength * offset);
-                focus = Math.abs(offset) >= 0.5;
+            if (i == index + 1) {
+                straightLength = (deltaLength * offset).toInt()
+                focus = abs(offset) >= 0.5
             }
-
-            l = startX;
-            t = 0;
-            r = l + radius * 2 + straightLength;
-            b = radius * 2;
-
-            canvas.drawRoundRect(l, t, r, b, radius, radius, focus ? focusedPaint : unFocusedPaint);
-            startX = (int) (r + margin);
+            val l: Int = startX
+            val t = 0
+            val r = l + radius * 2 + straightLength
+            val b: Int = radius * 2
+            canvas.drawRoundRect(
+                l.toFloat(),
+                t.toFloat(),
+                r.toFloat(),
+                b.toFloat(),
+                radius.toFloat(),
+                radius.toFloat(),
+                if (focus) focusedPaint else unFocusedPaint
+            )
+            startX = (r + margin)
         }
     }
 
-    private void setCurrent(int index, float offset) {
-        this.index = index;
-        this.offset = offset;
-        invalidate();
+    private fun setCurrent(index: Int, offset: Float) {
+        this.index = index
+        this.offset = offset
+        invalidate()
     }
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-
-        int finalW;
-        int finalH;
-        switch (widthMode) {
-            case MeasureSpec.AT_MOST:
-                finalW = Math.min(width, requiredWidth);
-                break;
-            case MeasureSpec.EXACTLY:
-                finalW = width;
-                break;
-            case MeasureSpec.UNSPECIFIED:
-            default:
-                finalW = requiredWidth;
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val width = MeasureSpec.getSize(widthMeasureSpec)
+        val height = MeasureSpec.getSize(heightMeasureSpec)
+        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
+        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+        @SuppressLint("SwitchIntDef") val finalW = when (widthMode) {
+            MeasureSpec.AT_MOST -> width.coerceAtMost(requiredWidth)
+            MeasureSpec.EXACTLY -> width
+            else -> requiredWidth
         }
-
-        switch (heightMode) {
-            case MeasureSpec.AT_MOST:
-                finalH = Math.min(height, radius * 2);
-                break;
-            case MeasureSpec.EXACTLY:
-                finalH = height;
-                break;
-            default:
-            case MeasureSpec.UNSPECIFIED:
-                finalH = radius * 2;
-                break;
+        @SuppressLint("SwitchIntDef") val finalH = when (heightMode) {
+            MeasureSpec.AT_MOST -> height.coerceAtMost(radius * 2)
+            MeasureSpec.EXACTLY -> height
+            else -> radius * 2
         }
-
-        setMeasuredDimension(finalW, finalH);
+        setMeasuredDimension(finalW, finalH)
     }
 
-    public void setUpWithPager(ViewPager viewPager) {
-        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                setCurrent(position, positionOffset);
+    fun setUpWithPager(viewPager: ViewPager) {
+        viewPager.addOnPageChangeListener(object : SimpleOnPageChangeListener() {
+            override fun onPageScrolled(
+                position: Int,
+                positionOffset: Float,
+                positionOffsetPixels: Int
+            ) {
+                setCurrent(position, positionOffset)
             }
-        });
-
-        if (viewPager.getAdapter() != null) {
-            update(viewPager.getAdapter());
+        })
+        if (viewPager.adapter != null) {
+            update(viewPager.adapter)
         }
-
-        viewPager.addOnAdapterChangeListener((viewPager1, oldAdapter, newAdapter) -> {
-            update(newAdapter);
-        });
+        viewPager.addOnAdapterChangeListener { _: ViewPager?, _: PagerAdapter?, newAdapter: PagerAdapter? ->
+            update(
+                newAdapter
+            )
+        }
     }
 
-    private void update(PagerAdapter pagerAdapter) {
-        num = pagerAdapter == null ? 0 : pagerAdapter.getCount();
-        requiredWidth = num == 0 ? 0 : (num - 1) * radius * 2 + focusLength + (num - 1) * margin;
+    private fun update(pagerAdapter: PagerAdapter?) {
+        num = pagerAdapter?.count ?: 0
+        requiredWidth =
+            if (num == 0) 0 else (num - 1) * radius * 2 + focusLength + (num - 1) * margin
+    }
+
+    companion object {
+        private const val DEF_RADIUS = 5
+        private const val DEF_MARGIN = 15
+        private const val DEF_FOCUS_LENGTH = 70
+        private const val DEF_FOCUSED_DOT_COLOR = Color.GRAY
+        private const val DEF_UNFOCUSED_DOT_COLOR = Color.LTGRAY
     }
 }

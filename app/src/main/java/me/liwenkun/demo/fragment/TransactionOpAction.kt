@@ -1,14 +1,9 @@
-package me.liwenkun.demo.fragment;
+package me.liwenkun.demo.fragment
 
-public abstract class TransactionOpAction implements Runnable {
-    private final TransactionOp transactionOp;
-    private final String tag;
-    public TransactionOpAction(TransactionOp op, String tag) {
-        this.transactionOp = op;
-        this.tag = tag;
-    }
-
-    public String getActionDesc() {
-        return transactionOp.name + ' ' + tag;
-    }
+abstract class TransactionOpAction(
+    private val transactionOp: TransactionOp,
+    private val tag: String
+) : Runnable {
+    val actionDesc: String
+        get() = transactionOp.name + ' ' + tag
 }

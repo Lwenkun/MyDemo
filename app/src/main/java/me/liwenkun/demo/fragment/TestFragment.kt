@@ -1,119 +1,106 @@
-package me.liwenkun.demo.fragment;
+package me.liwenkun.demo.fragment
 
-import android.content.Context;
-import android.os.Bundle;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+import android.content.Context
+import android.os.Bundle
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import me.liwenkun.demo.demoframework.Logger
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+class TestFragment : Fragment() {
 
-import org.jetbrains.annotations.NotNull;
+    private var tag: String? = null
+    private lateinit var logger: Logger
 
-import me.liwenkun.demo.demoframework.Logger;
-
-public class TestFragment extends Fragment {
-
-    private String tag;
-    private Logger logger;
-
-    @Override
-    public void onAttach(@NonNull @NotNull Context context) {
-        super.onAttach(context);
-        logger = ((Logger) context);
-        tag = getTag();
-        logLifecycle("onAttach");
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        logger = Logger.from(context)
+        tag = getTag()
+        logLifecycle("onAttach")
     }
 
-    public static TestFragment newInstance() {
-        return new TestFragment();
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        logLifecycle("onCreate")
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        logLifecycle("onCreate");
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        logLifecycle("onActivityCreated")
     }
 
-    @Override
-    public void onActivityCreated(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        logLifecycle("onActivityCreated");
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        val showTag = TextView(context)
+        showTag.setBackgroundColor(0xffeeeeee.toInt())
+        showTag.text = tag
+        showTag.layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        showTag.gravity = Gravity.CENTER
+        logLifecycle("onCreateView")
+        return showTag
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        TextView showTag = new TextView(getContext());
-        showTag.setBackgroundColor(0xffeeeeee);
-        showTag.setText(tag);
-        showTag.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-        showTag.setGravity(Gravity.CENTER);
-        logLifecycle("onCreateView");
-        return showTag;
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        logLifecycle("onViewCreated")
     }
 
-    @Override
-    public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        logLifecycle("onViewCreated");
+    override fun onStart() {
+        super.onStart()
+        logLifecycle("onStart")
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        logLifecycle("onStart");
+    override fun onResume() {
+        super.onResume()
+        logLifecycle("onResume")
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        logLifecycle("onResume");
+    override fun onStop() {
+        super.onStop()
+        logLifecycle("onStop")
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        logLifecycle("onStop");
+    override fun onPause() {
+        super.onPause()
+        logLifecycle("onPause")
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        logLifecycle("onPause");
+    override fun onDestroyView() {
+        super.onDestroyView()
+        logLifecycle("onDestroyView")
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        logLifecycle("onDestroyView");
+    override fun onDestroy() {
+        super.onDestroy()
+        logLifecycle("onDestroy")
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        logLifecycle("onDestroy");
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        logLifecycle("onSaveInstanceState")
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        logLifecycle("onSaveInstanceState");
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        logLifecycle("onViewStateRestored")
     }
 
-    @Override
-    public void onViewStateRestored(Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        logLifecycle("onViewStateRestored");
+    private fun logLifecycle(name: String) {
+        logger.log("fragment $tag $name called", Logger.COLOR_INFO)
     }
 
-    private void logLifecycle(String name) {
-        logger.log("fragment " + tag + ' ' + name + " called", Logger.COLOR_INFO);
+    companion object {
+        @JvmStatic
+        fun newInstance(): TestFragment {
+            return TestFragment()
+        }
     }
 }

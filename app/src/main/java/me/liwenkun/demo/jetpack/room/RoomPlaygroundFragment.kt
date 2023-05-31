@@ -1,6 +1,5 @@
-package me.liwenkun.demo.jetpack.room;
+package me.liwenkun.demo.jetpack.room
 
-import me.liwenkun.demo.demoframework.DemoBaseFragment;
+import me.liwenkun.demo.demoframework.DemoBaseFragment
 
-public class RoomPlaygroundFragment extends DemoBaseFragment {
-}
+class RoomPlaygroundFragment : DemoBaseFragment()

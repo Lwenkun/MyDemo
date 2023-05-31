@@ -1,32 +1,34 @@
-package me.liwenkun.demo.customview;
+package me.liwenkun.demo.customview
 
-import android.content.Context;
-import android.graphics.Canvas;
-import android.util.AttributeSet;
+import android.content.Context
+import android.graphics.Canvas
+import android.util.AttributeSet
+import android.widget.FrameLayout
 
-import androidx.annotation.Nullable;
+class MyFrameLayout : FrameLayout {
+    constructor(context: Context, attrs: AttributeSet?) : super(
+        context, attrs
+    )
 
-public class MyFrameLayout extends android.widget.FrameLayout {
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context, attrs, defStyleAttr
+    )
 
-   public MyFrameLayout(Context context, @Nullable AttributeSet attrs) {
-      super(context, attrs);
-   }
+    constructor(
+        context: Context,
+        attrs: AttributeSet,
+        defStyleAttr: Int,
+        defStyleRes: Int
+    ) : super(
+        context, attrs, defStyleAttr, defStyleRes
+    ) {
+    }
 
-   public MyFrameLayout(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-      super(context, attrs, defStyleAttr);
-   }
+    override fun dispatchDraw(canvas: Canvas) {
+        super.dispatchDraw(canvas)
+    }
 
-   public MyFrameLayout(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-      super(context, attrs, defStyleAttr, defStyleRes);
-   }
-
-   @Override
-   protected void dispatchDraw(Canvas canvas) {
-      super.dispatchDraw(canvas);
-   }
-
-   @Override
-   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-      super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-   }
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    }
 }

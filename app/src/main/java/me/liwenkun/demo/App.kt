@@ -1,19 +1,24 @@
-package me.liwenkun.demo;
+package me.liwenkun.demo
 
-import android.app.Application;
+import android.app.Application
+import androidx.room.Room.databaseBuilder
 
-public class App extends Application {
-
-    private static App app;
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        app = this;
-        SourceInjector.init();
+class App : Application() {
+    val appDatabase: AppDatabase by lazy {
+        databaseBuilder(this, AppDatabase::class.java, "ap-db").build()
     }
 
-    public static App get() {
-        return app;
+    override fun onCreate() {
+        super.onCreate()
+        app = this
+        SourceInjector.init()
+    }
+
+    companion object {
+        private lateinit var app: App
+        @JvmStatic
+        fun get(): App {
+            return app
+        }
     }
 }

@@ -11,7 +11,7 @@ import androidx.viewpager.widget.ViewPager
 import me.liwenkun.demo.demoframework.DemoBaseFragment
 import me.liwenkun.demo.R
 import me.liwenkun.demo.libannotation.Demo
-import me.liwenkun.demo.utils.Utils
+import me.liwenkun.demo.utils.DimensionUtils
 
 
 @Demo(title = "自定义小组件集合")
@@ -55,7 +55,7 @@ class CustomViewFragment : DemoBaseFragment() {
         ivOutline.outlineProvider = object : ViewOutlineProvider() {
             override fun getOutline(view: View?, outline: Outline?) {
                 if (view != null) {
-                    outline?.setRoundRect(0, 0, view.width, view.height, Utils.px(10).toFloat())
+                    outline?.setRoundRect(0, 0, view.width, view.height, DimensionUtils.px(10).toFloat())
                 }
             }
         }

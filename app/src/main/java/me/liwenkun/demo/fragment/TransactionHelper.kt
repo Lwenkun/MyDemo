@@ -1,63 +1,60 @@
-package me.liwenkun.demo.fragment;
+package me.liwenkun.demo.fragment
 
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 
-import java.util.ArrayList;
-import java.util.List;
+class TransactionHelper(private val fragmentManager: FragmentManager) {
 
-public class TransactionHelper {
-
-    private final FragmentManager fragmentManager;
-
-    private final MutableLiveData<List<TransactionOpAction>> transactionOps = new MutableLiveData<>();
-    private FragmentTransaction currentFragmentTransaction;
-
-    public TransactionHelper(FragmentManager fragmentManager) {
-        this.fragmentManager = fragmentManager;
+    fun size(): Int {
+        return transactionOps.value?.size ?: 0
     }
 
-    public void addTransactionOp(TransactionOp transactionOp, String tag) {
+    private val transactionOps = MutableLiveData<MutableList<TransactionOpAction>?>()
+    private var currentFragmentTransaction: FragmentTransaction? = null
+
+    fun addTransactionOp(transactionOp: TransactionOp, tag: String) {
         if (currentFragmentTransaction == null) {
-            currentFragmentTransaction = fragmentManager.beginTransaction();
+            currentFragmentTransaction = fragmentManager.beginTransaction()
         }
-        addTransactionOpInternal(transactionOp.generateTransactionOp(fragmentManager, currentFragmentTransaction, tag));
+        addTransactionOpInternal(
+            transactionOp.generateTransactionOp(
+                fragmentManager,
+                currentFragmentTransaction!!,
+                tag
+            )
+        )
     }
 
-    public void addTransactionOpInternal(TransactionOpAction runnable) {
-        List<TransactionOpAction> transactions = transactionOps.getValue() == null
-                ? new ArrayList<>() : transactionOps.getValue();
-        transactions.add(runnable);
-        transactionOps.setValue(transactions);
+    fun addTransactionOpInternal(runnable: TransactionOpAction) {
+        val transactions = if (transactionOps.value == null) ArrayList() else transactionOps.value!!
+        transactions.add(runnable)
+        transactionOps.value = transactions
     }
 
-    public void cleanTransactionOp() {
-        List<TransactionOpAction> transactions = transactionOps.getValue();
+    fun cleanTransactionOp() {
+        val transactions = transactionOps.value
         if (transactions != null) {
-            transactions.clear();
-            transactionOps.setValue(transactions);
+            transactions.clear()
+            transactionOps.value = transactions
         }
     }
 
-    public LiveData<List<TransactionOpAction>> getTransactionOp() {
-        return transactionOps;
-    }
+    val transactionOp: LiveData<MutableList<TransactionOpAction>?>
+        get() = transactionOps
 
-    public boolean commit(boolean addToBackStack) {
-        if (transactionOps.getValue() == null || transactionOps.getValue().isEmpty()) {
-            return false;
+    fun commit(addToBackStack: Boolean) {
+        transactionOps.value?.takeIf { it.isEmpty() }.apply {
+            for (transactionOpAction in transactionOps.value!!) {
+                transactionOpAction.run()
+            }
+            cleanTransactionOp()
+            if (addToBackStack) {
+                currentFragmentTransaction!!.addToBackStack(null)
+            }
+            currentFragmentTransaction!!.commit()
+            currentFragmentTransaction = null
         }
-        for (TransactionOpAction transactionOpAction : transactionOps.getValue()) {
-            transactionOpAction.run();
-        }
-        cleanTransactionOp();
-        if (addToBackStack) {
-            currentFragmentTransaction.addToBackStack(null);
-        }
-        currentFragmentTransaction.commit();
-        currentFragmentTransaction = null;
-        return true;
     }
 }

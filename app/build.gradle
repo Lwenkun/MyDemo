@@ -58,14 +58,17 @@ android {
         // minSdk >= 26，这样 d8 就直接将 invokeDynamic 指令转译成 invoke-customs 指令。
         //
         // 注意，编译 java 用的依然是 jdk17（在 IDE 中设置的值），只是指定了 -source 和 -target 选项为 1.8 而已
-        targetCompatibility JavaVersion.VERSION_1_8
-        sourceCompatibility JavaVersion.VERSION_1_8
+//        targetCompatibility JavaVersion.VERSION_1_8
+//        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_17
     }
     // 指定 kotlin 编译器生成的 java 字节码版本，必须和 targetCompatibility 保持一致，否则报错.
     // 其实这里可以省略，因为后面已经指定了 kotlin 的 jvmToolchain
     kotlinOptions {
         // jvmTarget 的值默认和 kotlin 的 jvmToolchain 保持一致
-        jvmTarget = '1.8'
+//        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
 
     // kotlin 为了让被注解的 kotlin 类能够被注解处理器处理，会让 kapt 先行针对被注解的 kotlin
@@ -127,9 +130,20 @@ java {
 
 // 修复 kapt target 问题的第二种方式，对所有 KotlinCompile 类型的任务，设置 jvmTarget 为 1.8。
 // kaptGenerateStubsDebugKotlin 应该也属于 KotlinCompile 类型，所以此方法也能解决问题
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        jvmTarget = "1.8"
+//tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+//    kotlinOptions {
+//        jvmTarget = "1.8"
+//    }
+//}
+// 另一种指定 kapt jvmTarget 的方式，因为 kaptGenerateStubsDebugKotlin 是在 afterEvaluate 阶段创建或注册的，所以必须在
+// afterEvaluate 阶段对其进行配置，否则是找不到的该任务的。上面那种方式之所以可以，是因为 withType 返回的是一个实时的
+// TaskCollection，这种容器内容会实时变化，并且当有新元素加到容器内时，会执行先前通过 configureEach 添加的 Action
+afterEvaluate {
+    kaptGenerateStubsDebugKotlin {
+        kotlinOptions {
+//            jvmTarget = "1.8"
+            jvmTarget = '17'
+        }
     }
 }
 

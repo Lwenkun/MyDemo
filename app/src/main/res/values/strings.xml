@@ -4,12 +4,12 @@
     <string name="test_translation">
         Visit us at <xliff:g id="application_homepage">http://my/app/home.html</xliff:g>
     </string>
-    <string name="open_log" translatable="false">打开日志</string>
-    <string name="close_log" translatable="false">关闭日志</string>
+    <string name="open_log_view" translatable="false">打开日志</string>
+    <string name="close_log_view" translatable="false">关闭日志</string>
     <string name="log" translatable="false">日志</string>
     <string name="elevation_note" translatable="false">View 的阴影无法超过父视图的边界，所以如果想要有阴影效果，父视图需要留下一定的空间</string>
     <string name="frame_animation_note" translatable="false">帧动画，点击即可播放</string>
-    <plurals name="test_plurals">
+    <plurals name="test_plurals" translatable="false">
         <item quantity="one">I want to buy %s Kindle</item>
         <item quantity="other">I want to buy %s Kindles</item>
     </plurals>
@@ -19,4 +19,8 @@
     <string name="rich_text_note" translatable="false">通过 getString 获取字符资源，如果字符是富文本，那么该富文本需要进行 html 转义，然后再经过 Html#fromHtml 才可以设置给 TextView； 如果是通过 getText 获取字符资源，如果字符是富文本，富文本不需要转义，获取后可以直接设置给 TextView</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
+    <string name="star" translatable="false">收藏</string>
+    <string name="has_star" translatable="false">已收藏</string>
+    <string name="demo_book" translatable="false">Demo 手册</string>
+    <string name="book_mark" translatable="false">收藏夹</string>
 </resources>
