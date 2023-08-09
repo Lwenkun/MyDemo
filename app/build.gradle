@@ -2,6 +2,7 @@
 // 为了解决这个问题，gradle 单独处理 plugins 中的代码，解析出插件，将插件作为脚本编译和运行的依赖，这样脚本就能正常
 // 编译运行了，因此我们在脚本中能正常使用脚本中定义类。
 plugins {
+    // 插件会被顺序添加到一个公共的类加载器中，所以后应用的插件能够使用先应用插件的中的类。
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kapt)
@@ -98,6 +99,16 @@ android {
     }
 
     namespace 'me.liwenkun.demo'
+    sourceSets {
+        main {
+            res {
+                srcDirs 'src\\main\\res', 'src\\main\\res\\layout\\framework'
+            }
+        }
+    }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 // 直接设定 java 插件的 toolchain，java、kotlin、kapt 等插件都将会遵守这个值。
@@ -149,6 +160,10 @@ afterEvaluate {
 
 
 dependencies {
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'

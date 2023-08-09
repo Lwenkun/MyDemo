@@ -17,7 +17,7 @@ import me.liwenkun.demo.App.Companion.get
 import me.liwenkun.demo.demoframework.DemoBaseActivity
 import me.liwenkun.demo.demoframework.DemoBook
 import me.liwenkun.demo.demoframework.DemoBook.DemoItem
-import me.liwenkun.demo.demoframework.DemoFragmentActivity
+import me.liwenkun.demo.demoframework.DemoFragmentContainerActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,8 +31,7 @@ class MainActivity : AppCompatActivity() {
     private val onBackPressedCallback = object: OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
             onCloseBookmarks()
-            mainActivityModel.getCurrentCategory().value =
-                mainActivityModel.getCurrentCategory().value!!.parent
+            mainActivityModel.setCurrentCategory(mainActivityModel.getCurrentCategory().value!!.parent)
         }
     }
 
@@ -58,7 +57,7 @@ class MainActivity : AppCompatActivity() {
                 if (Activity::class.java.isAssignableFrom(demoItem.demoPage)) {
                     DemoBaseActivity.show(this@MainActivity, demoItem)
                 } else if (Fragment::class.java.isAssignableFrom(demoItem.demoPage)) {
-                    DemoFragmentActivity.show(this@MainActivity, demoItem)
+                    DemoFragmentContainerActivity.show(this@MainActivity, demoItem)
                 } else {
                     throw IllegalStateException("DemoItem#getDemoPage() can only be Activity or Fragment")
                 }
@@ -101,7 +100,6 @@ class MainActivity : AppCompatActivity() {
     private fun onOpenBookmarks() {
         menuItemBookmark!!.isVisible = false
         BOOK_MARKS.parent = mainActivityModel.getCurrentCategory().value
-        mainActivityModel.setCurrentCategory(BOOK_MARKS)
         demoItemsInBookmark.observe(this, observer)
         showingBookmarks = true
     }

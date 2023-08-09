@@ -54,10 +54,10 @@ enum class DemoBook {
     class Category(name: String, path: String) : Item(name, path) {
         private val _demoItems: MutableMap<String, DemoItem> = HashMap()
 
-        internal val _categoryItems: MutableMap<String, Category> = HashMap()
+        internal val _categories: MutableMap<String, Category> = HashMap()
 
-        fun addSubCategory(subItem: Category) {
-            _categoryItems[subItem.name] = subItem
+        fun addCategory(subCategory: Category) {
+            _categories[subCategory.name] = subCategory
         }
 
         fun addDemoItem(demoItem: DemoItem) {
@@ -71,12 +71,12 @@ enum class DemoBook {
 
         val categories: List<Category>
             get() {
-                return _categoryItems.values.sorted()
+                return _categories.values.sorted()
             }
 
         fun clear() {
             _demoItems.clear()
-            _categoryItems.clear()
+            _categories.clear()
         }
     }
 
@@ -113,11 +113,11 @@ enum class DemoBook {
                 }
                 currentPath.append('/')
                 currentPath.append(pathFragment)
-                var subCategory = currCategory._categoryItems[pathFragment]
+                var subCategory = currCategory._categories[pathFragment]
                 if (subCategory == null) {
                     subCategory = Category(pathFragment, currentPath.toString())
                     subCategory.parent = currCategory
-                    currCategory.addSubCategory(subCategory)
+                    currCategory.addCategory(subCategory)
                 }
                 currCategory = subCategory
             }

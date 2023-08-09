@@ -14,7 +14,7 @@ import me.liwenkun.demo.libannotation.Demo
 class CanvasPlaygroundFragment : DemoBaseFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        demoFragmentActivity.setSourceCode(CanvasView.sourceCode)
+        demoFragmentContainerActivity.setSourceCode(CanvasView.sourceCode)
     }
 
     override fun onCreateView(

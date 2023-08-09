@@ -15,10 +15,10 @@ open class DemoBaseFragment : Fragment(), Logger {
         logger.deleteAllLogs()
     }
 
-    val demoFragmentActivity: DemoFragmentActivity
-        get() = requireActivity() as DemoFragmentActivity
+    val demoFragmentContainerActivity: DemoFragmentContainerActivity
+        get() = requireActivity() as DemoFragmentContainerActivity
 
-    override fun log(tag: String?, message: String?, color: Int, promptChar: String?) {
+     override fun log(tag: String?, message: String?, color: Int, promptChar: String?) {
         logger.log(tag, message, color, promptChar)
     }
 }
