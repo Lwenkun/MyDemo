@@ -43,8 +43,21 @@ android {
         }
     }
     compileOptions {
-        // 这个属性设置为 true, 就能够让 AGP 插件对 api 进行脱糖处理，
-        // 但也只是对 api 进行脱糖，对语法特性脱糖需要用到下面两个字段
+        // 这个属性设置为 true, 就能够让 AGP 插件对 api 进行脱糖处理，同时还需要依赖
+        // com.android.tools:desugar_jdk_libs 库，因为对 api 的脱糖原理是
+        // 通过 desugar_jdk_libs 提供 dalvik 平台缺失的 api，并且版本越大支持的 api 越多。2.0.0 以上的版本
+        // 支持 java 11 api。desugar_jdk_libs 版本对 AGP 版本有要求：
+        // +-----------------+-----------------+
+        // | 版本             |  最低 AGP 版本   |
+        // +-----------------+-----------------+
+        // | 1.1.9           | 4.0.0           |
+        // +-----------------+-----------------+
+        // | 1.2.3           | 7.3.0           |
+        // +-----------------+-----------------+
+        // | 2.0.3           | 7.4.0-alpha10   |
+        // +-----------------+-----------------+
+        // 所以，假如想要使用 java11 api，就必须使用 2.0.0+ 的 desugar_jdk_libs 和 7.4.0+ 的 AGP。
+        // 但也只是对 api 进行脱糖，对语法特性脱糖需要用到下面两个字段。
         coreLibraryDesugaringEnabled true
         // sourceCompatibility 必须小于等于 targetCompatibility，否则 javac 会报错，这两个值分别对应 javac
         // 的 -source 和 -target 选项。javac 并不会和 d8 一样，自动根据 targetCompatibility 对语法语法进行脱糖，
